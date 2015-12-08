@@ -27,14 +27,13 @@ import COpenSSL
 
 public final class SSLServerContext: SSLContext, SSLServerContextType {
 	
-	public let ctx: UnsafeMutablePointer<SSL_CTX>
-	
 	public var streamType: SSLServerStreamType.Type {
 		return SSLServerStream.self
 	}
 	
 	public init(certificate: String, privateKey: String, certificateChain: String? = nil) throws {
-		self.ctx = SSL_CTX_new(SSLv23_method())
+		let ctx =  SSL_CTX_new(SSLv23_method())
+		super.init(ctx: ctx)
 		if ctx == nil {
 			throw SSLContextError.GenericError
 		}

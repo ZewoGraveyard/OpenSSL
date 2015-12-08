@@ -22,12 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if os(Linux)
-	import Glibc
-#else
-	import Darwin.C
-#endif
-
 import SSL
 import COpenSSL
 
@@ -36,6 +30,17 @@ public enum SSLContextError: ErrorType {
 	case GenericError
 }
 
-public protocol SSLContext: SSLContextType {
-	var ctx: UnsafeMutablePointer<SSL_CTX> { get }
+public class SSLContext: SSLContextType {
+	
+	internal var ctx: UnsafeMutablePointer<SSL_CTX>
+	
+	internal init(ctx: UnsafeMutablePointer<SSL_CTX>) {
+		self.ctx = ctx
+	}
+	
+	public convenience init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) {
+		let ctx = SSL_CTX_new(getMethodFunc(method, type: type))
+		self.init(ctx: ctx)
+	}
+	
 }
