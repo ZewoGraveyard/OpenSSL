@@ -1,4 +1,4 @@
-// SSLServerContext.swift
+// SSLKey.swift
 //
 // The MIT License (MIT)
 //
@@ -22,35 +22,20 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import SSL
 import COpenSSL
 
-public final class SSLServerContext: SSLContext, SSLServerContextType {
-	
-	public let ctx: UnsafeMutablePointer<SSL_CTX>
-	
-	public var streamType: SSLServerStreamType.Type {
-		return SSLServerStream.self
+public class SSLKey {
+
+	internal let key: EVP_PKEY
+
+	public init(keyLength: Int32 = 1024) {
+		let privateKey = EVP_PKEY_new()
+		let rsa = RSA_new()
+		let exponent = BN_new()
+		BN_set_word(exponent, 0x10001)
+		RSA_generate_key_ex(rsa, keyLength, exponent, nil)
+		EVP_PKEY_set1_RSA(privateKey, rsa)
+		self.key = privateKey.memory
 	}
-	
-	public init(certificate: String, privateKey: String, certificateChain: String? = nil) throws {
-		self.ctx = SSL_CTX_new(SSLv23_method())
-		if ctx == nil {
-			throw SSLContextError.GenericError
-		}
-		SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nil)
-		SSL_CTX_set_ecdh_auto(ctx, 1)
-		if let certificateChain = certificateChain {
-			if SSL_CTX_use_certificate_chain_file(ctx, certificateChain) < 0 {
-				throw SSLContextError.CertificateError
-			}
-		}
-		if SSL_CTX_use_certificate_file(ctx, certificate, SSL_FILETYPE_PEM) < 0 {
-			throw SSLContextError.CertificateError
-		}
-		if SSL_CTX_use_PrivateKey_file(ctx, privateKey, SSL_FILETYPE_PEM) < 0 {
-			throw SSLContextError.CertificateError
-		}
-	}
-	
+
 }
