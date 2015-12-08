@@ -1,4 +1,4 @@
-// SSLContext.swift
+// SSLServerContext.swift
 //
 // The MIT License (MIT)
 //
@@ -31,11 +31,32 @@
 import SSL
 import COpenSSL
 
-public enum SSLContextError: ErrorType {
-	case CertificateError
-	case GenericError
-}
-
-public protocol SSLContext: SSLContextType {
-	var ctx: UnsafeMutablePointer<SSL_CTX> { get }
+public final class SSLServerContext: SSLContext, SSLServerContextType {
+	
+	public let ctx: UnsafeMutablePointer<SSL_CTX>
+	
+	public var streamType: SSLServerStreamType.Type {
+		return SSLServerStream.self
+	}
+	
+	public init(certificate: String, privateKey: String, certificateChain: String? = nil) throws {
+		self.ctx = SSL_CTX_new(SSLv23_method())
+		if ctx == nil {
+			throw SSLContextError.GenericError
+		}
+		SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nil)
+		SSL_CTX_set_ecdh_auto(ctx, 1)
+		if let certificateChain = certificateChain {
+			if SSL_CTX_use_certificate_chain_file(ctx, certificateChain) < 0 {
+				throw SSLContextError.CertificateError
+			}
+		}
+		if SSL_CTX_use_certificate_file(ctx, certificate, SSL_FILETYPE_PEM) < 0 {
+			throw SSLContextError.CertificateError
+		}
+		if SSL_CTX_use_PrivateKey_file(ctx, privateKey, SSL_FILETYPE_PEM) < 0 {
+			throw SSLContextError.CertificateError
+		}
+	}
+	
 }

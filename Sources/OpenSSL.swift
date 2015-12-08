@@ -28,11 +28,12 @@
 	import Darwin.C
 #endif
 
+import SSL
 import COpenSSL
 
 public let DEFAULT_BUFFER_SIZE = 4096
 
-public final class OpenSSL {
+public final class OpenSSL: SSLType {
 
 	public static func initialize() {
 		SSL_library_init()

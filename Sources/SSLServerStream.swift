@@ -1,4 +1,4 @@
-// SSLStream.swift
+// SSLServerStream.swift
 //
 // The MIT License (MIT)
 //
@@ -32,9 +32,9 @@ import SSL
 import COpenSSL
 import Stream
 
-public final class SSLStream: SSLStreamType {
+public final class SSLServerStream: SSLServerStreamType {
 	let rawStream: StreamType
-	private let context: SSLContext
+	private let context: SSLServerContext
 	private let ctx: UnsafeMutablePointer<SSL_CTX>
 	private let ssl: UnsafeMutablePointer<SSL>
 	private let rbio: UnsafeMutablePointer<BIO>
@@ -44,8 +44,8 @@ public final class SSLStream: SSLStreamType {
 		case UnsupportedContext
 	}
 
-	public init(context: SSLContextType, rawStream: StreamType) throws {
-		guard let sslContext = context as? SSLContext else {
+	public init(context: SSLServerContextType, rawStream: StreamType) throws {
+		guard let sslContext = context as? SSLServerContext else {
 			throw SSLStreamError.UnsupportedContext
 		}
 		self.rawStream = rawStream
@@ -98,7 +98,7 @@ public final class SSLStream: SSLStreamType {
 	}
 
 	public func pipe() -> StreamType {
-		return try! SSLStream(context: self.context, rawStream: self.rawStream.pipe())
+		return try! SSLServerStream(context: self.context, rawStream: self.rawStream.pipe())
 	}
 
 	private func checkSslOutput(completion: (Void throws -> Void) -> Void) {
