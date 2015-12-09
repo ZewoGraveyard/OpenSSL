@@ -32,23 +32,22 @@ public final class SSLServerContext: SSLContext, SSLServerContextType {
 	}
 	
 	public init(certificate: String, privateKey: String, certificateChain: String? = nil) throws {
-		let ctx =  SSL_CTX_new(SSLv23_method())
-		super.init(ctx: ctx)
-		if ctx == nil {
-			throw SSLContextError.GenericError
-		}
-		SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nil)
-		SSL_CTX_set_ecdh_auto(ctx, 1)
-		if let certificateChain = certificateChain {
-			if SSL_CTX_use_certificate_chain_file(ctx, certificateChain) < 0 {
-				throw SSLContextError.CertificateError
+		super.init(method: .SSLv23, type: .Server)
+		
+		try self.withContext { context in
+			SSL_CTX_set_verify(context, SSL_VERIFY_NONE, nil)
+			SSL_CTX_set_ecdh_auto(context, 1)
+			if let certificateChain = certificateChain {
+				if SSL_CTX_use_certificate_chain_file(context, certificateChain) < 0 {
+					throw SSLContextError.Certificate
+				}
 			}
-		}
-		if SSL_CTX_use_certificate_file(ctx, certificate, SSL_FILETYPE_PEM) < 0 {
-			throw SSLContextError.CertificateError
-		}
-		if SSL_CTX_use_PrivateKey_file(ctx, privateKey, SSL_FILETYPE_PEM) < 0 {
-			throw SSLContextError.CertificateError
+			if SSL_CTX_use_certificate_file(context, certificate, SSL_FILETYPE_PEM) < 0 {
+				throw SSLContextError.Certificate
+			}
+			if SSL_CTX_use_PrivateKey_file(context, privateKey, SSL_FILETYPE_PEM) < 0 {
+				throw SSLContextError.Certificate
+			}
 		}
 	}
 	

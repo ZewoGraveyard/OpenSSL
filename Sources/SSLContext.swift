@@ -26,21 +26,53 @@ import SSL
 import COpenSSL
 
 public enum SSLContextError: ErrorType {
-	case CertificateError
-	case GenericError
+	case Context
+	case Certificate
 }
 
 public class SSLContext: SSLContextType {
 	
-	internal var ctx: UnsafeMutablePointer<SSL_CTX>
+	internal var context: SSL_CTX
 	
-	internal init(ctx: UnsafeMutablePointer<SSL_CTX>) {
-		self.ctx = ctx
+	public func withContext<Result>(body: UnsafeMutablePointer<SSL_CTX> throws -> Result) rethrows -> Result {
+		return try withUnsafeMutablePointer(&context) { try body($0) }
 	}
 	
-	public convenience init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) {
-		let ctx = SSL_CTX_new(getMethodFunc(method, type: type))
-		self.init(ctx: ctx)
+	public init(context: SSL_CTX) {
+		self.context = context
+	}
+	
+	public init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) {
+		self.context = SSL_CTX_new(getMethodFunc(method, type: type)).memory
+	}
+	
+	public func useCertificate(certificate: SSLCertificate) {
+		self.withContext { context in
+			certificate.withCertificate { certificate in
+				SSL_CTX_use_certificate(context, certificate)
+			}
+		}
+	}
+	
+	public func usePrivateKey(privateKey: SSLKey) {
+		self.withContext { context in
+			privateKey.withKey { key in
+				SSL_CTX_use_PrivateKey(context, key)
+			}
+		}
+	}
+	
+	public func setCipherSuites(cipherSuites: String) {
+		self.withContext { context in
+			SSL_CTX_set_cipher_list(context, cipherSuites)
+		}
+	}
+	
+	public func setSrtpProfiles(srtpProfiles: String) throws {
+		try self.withContext { context in
+			let ret = SSL_CTX_set_tlsext_use_srtp(context, srtpProfiles)
+			guard ret >= 0 else { throw SSLContextError.Context }
+		}
 	}
 	
 }

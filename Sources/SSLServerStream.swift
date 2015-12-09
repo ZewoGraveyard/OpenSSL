@@ -29,8 +29,7 @@ import Stream
 public final class SSLServerStream: SSLServerStreamType {
 	let rawStream: StreamType
 	private let context: SSLServerContext
-	private let ctx: UnsafeMutablePointer<SSL_CTX>
-	private let ssl: UnsafeMutablePointer<SSL>
+	private let ssl: SSLSession
 	private let rbio: UnsafeMutablePointer<BIO>
 	private let wbio: UnsafeMutablePointer<BIO>
 
@@ -42,14 +41,17 @@ public final class SSLServerStream: SSLServerStreamType {
 		guard let sslContext = context as? SSLServerContext else {
 			throw SSLStreamError.UnsupportedContext
 		}
-		self.rawStream = rawStream
 		self.context = sslContext
-		self.ctx = sslContext.ctx
-		self.ssl = SSL_new(ctx)
+		self.rawStream = rawStream
+		
+		self.ssl = SSLSession(context: sslContext)
 		self.rbio = BIO_new(BIO_s_mem())
 		self.wbio = BIO_new(BIO_s_mem())
-		SSL_set_bio(ssl, rbio, wbio)
-		SSL_set_accept_state(ssl)
+		
+		self.ssl.withSSL { ssl in
+			SSL_set_bio(ssl, self.rbio, self.wbio)
+			SSL_set_accept_state(ssl)
+		}
 	}
 
 	public func receive(completion: (Void throws -> [Int8]) -> Void) {
@@ -58,8 +60,8 @@ public final class SSLServerStream: SSLServerStreamType {
 				var data = try result()
 				let written = BIO_write(self.rbio, &data, Int32(data.count))
 				if written > 0 {
-					if SSL_state(self.ssl) != SSL_ST_OK {
-						SSL_do_handshake(self.ssl)
+					if self.ssl.state != .OK {
+						self.ssl.doHandshake()
 						self.checkSslOutput() { result in
 							do {
 								try result()
@@ -68,10 +70,9 @@ public final class SSLServerStream: SSLServerStreamType {
 							}
 						}
 					} else {
-						var buffer: [Int8] = Array(count: DEFAULT_BUFFER_SIZE, repeatedValue: 0)
-						let readSize = SSL_read(self.ssl, &buffer, Int32(buffer.count))
-						if readSize > 0 {
-							completion({ Array(buffer.prefix(Int(readSize))) })
+						let data = self.ssl.read()
+						if data.count > 0 {
+							completion({ data })
 						}
 					}
 				}
@@ -82,8 +83,7 @@ public final class SSLServerStream: SSLServerStreamType {
 	}
 
 	public func send(data: [Int8], completion: (Void throws -> Void) -> Void) {
-		var data = data
-		SSL_write(self.ssl, &data, Int32(data.count))
+		self.ssl.write(data)
 		self.checkSslOutput(completion)
 	}
 

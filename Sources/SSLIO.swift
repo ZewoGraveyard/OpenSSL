@@ -1,4 +1,4 @@
-// SSLKey.swift
+// SSLIO.swift
 //
 // The MIT License (MIT)
 //
@@ -24,22 +24,29 @@
 
 import COpenSSL
 
-public class SSLKey {
-
-	internal var key: EVP_PKEY
-
-	public func withKey<Result>(body: UnsafeMutablePointer<EVP_PKEY> throws -> Result) rethrows -> Result {
-		return try withUnsafeMutablePointer(&key) { try body($0) }
+public class SSLIO {
+	
+	public enum Method {
+		case Memory
 	}
-
-	public init(keyLength: Int32) {
-		let privateKey = EVP_PKEY_new()
-		let rsa = RSA_new()
-		let exponent = BN_new()
-		BN_set_word(exponent, 0x10001)
-		RSA_generate_key_ex(rsa, keyLength, exponent, nil)
-		EVP_PKEY_set1_RSA(privateKey, rsa)
-		self.key = privateKey.memory
+	
+	internal var bio: BIO
+	
+	public func withBIO<Result>(body: UnsafeMutablePointer<BIO> throws -> Result) rethrows -> Result {
+		return try withUnsafeMutablePointer(&bio) { try body($0) }
 	}
-
+	
+	public init(bio: BIO) {
+		self.bio = bio
+	}
+	
+	public init(method: Method) {
+		let methodObj: UnsafeMutablePointer<BIO_METHOD>
+		switch method {
+		case .Memory:
+			methodObj = BIO_s_mem()
+		}
+		self.bio = BIO_new(methodObj).memory
+	}
+	
 }

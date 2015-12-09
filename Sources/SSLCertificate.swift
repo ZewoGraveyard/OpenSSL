@@ -22,6 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+#if os(Linux)
+    import Glibc
+#else
+    import Darwin.C
+#endif
+
 import COpenSSL
 
 private extension UInt8 {
@@ -43,13 +49,24 @@ private extension X509 {
 
 }
 
+public enum SSLCertificateError: ErrorType {
+	case Certificate
+	case Subject
+	case PrivateKey
+	case Extension
+	case Sign
+}
+
 public class SSLCertificate {
 
-	internal let cert: X509
+	internal var cert: X509
+	
+	public func withCertificate<Result>(body: UnsafeMutablePointer<X509> throws -> Result) rethrows -> Result {
+		return try withUnsafeMutablePointer(&cert) { try body($0) }
+	}
 	
 	public var fingerprint: String {
-		var cert = self.cert
-		return withUnsafeMutablePointer(&cert) { ptr in
+		return self.withCertificate { ptr in
 			let md = UnsafeMutablePointer<UInt8>.alloc(Int(EVP_MAX_MD_SIZE))
 			defer { md.destroy(); md.dealloc(Int(EVP_MAX_MD_SIZE)) }
 			var n: UInt32 = 0
@@ -58,41 +75,54 @@ public class SSLCertificate {
 		}
 	}
 
-	public init(privateKey: SSLKey, commonName: String, expireDays: Int = 365, subjectAltName: String? = nil) {
+	public init(privateKey: SSLKey, commonName: String, expiresInDays: Int = 365, subjectAltName: String? = nil) throws {
 		var privateKey = privateKey.key
+		
+		var ret: Int32 = 0
 
 		let cert = X509_new()
+		guard cert != nil else { throw SSLCertificateError.Certificate }
+		
 		let subject = X509_NAME_new()
-		let ext = X509_EXTENSION_new()
+		var ext = X509_EXTENSION_new()
 
 		let serial = rand()
 		ASN1_INTEGER_set(X509_get_serialNumber(cert), Int(serial))
 
-		X509_NAME_add_entry_by_txt(subject, "CN", (MBSTRING_FLAG|1), commonName, Int32(commonName.utf8.count), -1, 0)
-		X509_set_issuer_name(cert, subject)
-		X509_set_subject_name(cert, subject)
+		ret = X509_NAME_add_entry_by_txt(subject, "CN", (MBSTRING_FLAG|1), commonName, Int32(commonName.utf8.count), -1, 0)
+		guard ret >= 0 else { throw SSLCertificateError.Subject }
+		
+		ret = X509_set_issuer_name(cert, subject)
+		guard ret >= 0 else { throw SSLCertificateError.Subject }
+		ret = X509_set_subject_name(cert, subject)
+		guard ret >= 0 else { throw SSLCertificateError.Subject }
 
 		X509_gmtime_adj(cert.memory.validityNotBefore, 0)
-		X509_gmtime_adj(cert.memory.validityNotAfter, expireDays*86400)
+		X509_gmtime_adj(cert.memory.validityNotAfter, expiresInDays*86400)
 
-		X509_set_pubkey(cert, &privateKey)
+		ret = X509_set_pubkey(cert, &privateKey)
+		guard ret >= 0 else { throw SSLCertificateError.PrivateKey }
 
 		if let subjectAltName = subjectAltName {
-			subjectAltName.withCString { strPtr in
-				X509V3_EXT_conf_nid(nil, nil, NID_subject_alt_name, UnsafeMutablePointer<CChar>(strPtr))
+			try subjectAltName.withCString { strPtr in
+				ext = X509V3_EXT_conf_nid(nil, nil, NID_subject_alt_name, UnsafeMutablePointer<CChar>(strPtr))
+				ret = X509_add_ext(cert, ext, -1)
+				X509_EXTENSION_free(ext)
+				guard ret >= 0 else { throw SSLCertificateError.Extension }
 			}
 		}
 
-		"CA:FALSE".withCString { strPtr in
-			X509V3_EXT_conf_nid(nil, nil, NID_basic_constraints, UnsafeMutablePointer<CChar>(strPtr))
+		try "CA:FALSE".withCString { strPtr in
+			ext = X509V3_EXT_conf_nid(nil, nil, NID_basic_constraints, UnsafeMutablePointer<CChar>(strPtr))
+			ret = X509_add_ext(cert, ext, -1)
+			X509_EXTENSION_free(ext)
+			guard ret >= 0 else { throw SSLCertificateError.Extension }
 		}
-
-		X509_add_ext(cert, ext, -1)
-		X509_EXTENSION_free(ext)
 
 		// TODO: add extensions NID_subject_key_identifier and NID_authority_key_identifier
 
-		X509_sign(cert, &privateKey, EVP_sha256())
+		ret = X509_sign(cert, &privateKey, EVP_sha256())
+		guard ret >= 0 else { throw SSLCertificateError.Sign }
 
 		self.cert = cert.memory
 	}
