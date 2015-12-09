@@ -55,12 +55,12 @@ public class SSLSession {
 		self.shutdown()
 	}
 	
-	var state: State {
+	public var state: State {
 		let state = withSSL { SSL_state($0) }
 		return State(rawValue: state) ?? .Error
 	}
 	
-	var peerCertificate: SSLCertificate? {
+	public var peerCertificate: SSLCertificate? {
 		let cert = withSSL { SSL_get_peer_certificate($0) }
 		guard cert != nil else { return nil }
 		defer { X509_free(cert) }
