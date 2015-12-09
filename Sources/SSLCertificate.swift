@@ -74,7 +74,11 @@ public class SSLCertificate {
 			return UnsafeMutableBufferPointer(start: md, count: Int(EVP_MAX_MD_SIZE)).generate().prefix(Int(n)).map({ $0.hexString }).joinWithSeparator(":")
 		}
 	}
-
+	
+	public init(certificate: X509) {
+		self.cert = certificate
+	}
+	
 	public init(privateKey: SSLKey, commonName: String, expiresInDays: Int = 365, subjectAltName: String? = nil) throws {
 		var privateKey = privateKey.key
 		
