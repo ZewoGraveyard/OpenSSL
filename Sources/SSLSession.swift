@@ -61,6 +61,16 @@ public class SSLSession {
 		return State(rawValue: state) ?? .Error
 	}
 	
+	public func setIO(readIO: SSLIO, writeIO: SSLIO) {
+		withSSL { ssl in
+			readIO.withBIO { rbio in
+				writeIO.withBIO { wbio in
+					SSL_set_bio(ssl, rbio, wbio)
+				}
+			}
+		}
+	}
+	
 	public func doHandshake() {
 		withSSL { SSL_do_handshake($0) }
 	}

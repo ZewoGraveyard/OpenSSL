@@ -30,11 +30,12 @@ public final class SSLServerStream: SSLServerStreamType {
 	let rawStream: StreamType
 	private let context: SSLServerContext
 	private let ssl: SSLSession
-	private let rbio: UnsafeMutablePointer<BIO>
-	private let wbio: UnsafeMutablePointer<BIO>
+	private let readIO: SSLIO
+	private let writeIO: SSLIO
 
 	public enum SSLStreamError: ErrorType {
 		case UnsupportedContext
+		case NoData
 	}
 
 	public init(context: SSLServerContextType, rawStream: StreamType) throws {
@@ -45,11 +46,12 @@ public final class SSLServerStream: SSLServerStreamType {
 		self.rawStream = rawStream
 		
 		self.ssl = SSLSession(context: sslContext)
-		self.rbio = BIO_new(BIO_s_mem())
-		self.wbio = BIO_new(BIO_s_mem())
+		
+		self.readIO = SSLIO(method: .Memory)
+		self.writeIO = SSLIO(method: .Memory)
+		self.ssl.setIO(readIO: self.readIO, writeIO: self.writeIO)
 		
 		self.ssl.withSSL { ssl in
-			SSL_set_bio(ssl, self.rbio, self.wbio)
 			SSL_set_accept_state(ssl)
 		}
 	}
@@ -57,23 +59,22 @@ public final class SSLServerStream: SSLServerStreamType {
 	public func receive(completion: (Void throws -> [Int8]) -> Void) {
 		self.rawStream.receive { result in
 			do {
-				var data = try result()
-				let written = BIO_write(self.rbio, &data, Int32(data.count))
-				if written > 0 {
-					if self.ssl.state != .OK {
-						self.ssl.doHandshake()
-						self.checkSslOutput() { result in
-							do {
-								try result()
-							} catch {
-								completion({ throw error })
-							}
+				let data = try result()
+				guard data.count > 0 else { return }
+				self.readIO.write(data)
+				if self.ssl.state != .OK {
+					self.ssl.doHandshake()
+					self.checkSslOutput() { result in
+						do {
+							try result()
+						} catch {
+							completion({ throw error })
 						}
-					} else {
-						let data = self.ssl.read()
-						if data.count > 0 {
-							completion({ data })
-						}
+					}
+				} else {
+					let data = self.ssl.read()
+					if data.count > 0 {
+						completion({ data })
 					}
 				}
 			} catch {
@@ -96,16 +97,14 @@ public final class SSLServerStream: SSLServerStreamType {
 	}
 
 	private func checkSslOutput(completion: (Void throws -> Void) -> Void) {
-		var buffer: [Int8] = Array(count: DEFAULT_BUFFER_SIZE, repeatedValue: 0)
-		let readSize = BIO_read(self.wbio, &buffer, Int32(buffer.count))
-		if readSize > 0 {
-			self.rawStream.send(Array(buffer.prefix(Int(readSize)))) { serializeResult in
-				do {
-					try serializeResult()
-					completion({})
-				} catch {
-					completion({ throw error })
-				}
+		let data = self.writeIO.read()
+		guard data.count > 0 else { completion({ throw SSLStreamError.NoData }); return }
+		self.rawStream.send(data) { serializeResult in
+			do {
+				try serializeResult()
+				completion({})
+			} catch {
+				completion({ throw error })
 			}
 		}
 	}

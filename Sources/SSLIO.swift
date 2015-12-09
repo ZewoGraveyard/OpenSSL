@@ -49,4 +49,15 @@ public class SSLIO {
 		self.bio = BIO_new(methodObj).memory
 	}
 	
+	public func write(data: [Int8]) {
+		var data = data
+		withBIO { BIO_write($0, &data, Int32(data.count)) }
+	}
+	
+	public func read() -> [Int8] {
+		var buffer: [Int8] = Array(count: DEFAULT_BUFFER_SIZE, repeatedValue: 0)
+		let readSize = withBIO { BIO_read($0, &buffer, Int32(buffer.count)) }
+		return Array(buffer.prefix(Int(readSize)))
+	}
+	
 }
