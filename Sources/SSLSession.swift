@@ -61,7 +61,7 @@ public class SSLSession {
 		return State(rawValue: state) ?? .Error
 	}
 	
-	public func setIO(readIO: SSLIO, writeIO: SSLIO) {
+	public func setIO(readIO readIO: SSLIO, writeIO: SSLIO) {
 		withSSL { ssl in
 			readIO.withBIO { rbio in
 				writeIO.withBIO { wbio in
