@@ -64,7 +64,7 @@ public class SSLSession {
 		let cert = withSSL { SSL_get_peer_certificate($0) }
 		guard cert != nil else { return nil }
 		defer { X509_free(cert) }
-		return SSLCertificate(certificate: cert.memory).fingerprint
+		return SSLCertificate(certificate: cert.memory)
 	}
 	
 	public func setIO(readIO readIO: SSLIO, writeIO: SSLIO) {
