@@ -98,7 +98,7 @@ public final class SSLServerStream: SSLServerStreamType {
 
 	private func checkSslOutput(completion: (Void throws -> Void) -> Void) {
 		let data = self.writeIO.read()
-		guard data.count > 0 else { completion({ throw SSLStreamError.NoData }); return }
+		guard data.count > 0 else { completion({}); return }
 		self.rawStream.send(data) { serializeResult in
 			do {
 				try serializeResult()

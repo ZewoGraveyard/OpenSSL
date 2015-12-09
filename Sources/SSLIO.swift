@@ -57,7 +57,11 @@ public class SSLIO {
 	public func read() -> [Int8] {
 		var buffer: [Int8] = Array(count: DEFAULT_BUFFER_SIZE, repeatedValue: 0)
 		let readSize = withBIO { BIO_read($0, &buffer, Int32(buffer.count)) }
-		return Array(buffer.prefix(Int(readSize)))
+		if readSize > 0 {
+			return Array(buffer.prefix(Int(readSize)))
+		} else {
+			return []
+		}
 	}
 	
 }

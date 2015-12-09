@@ -53,7 +53,6 @@ public class SSLSession {
 	
 	deinit {
 		self.shutdown()
-		withSSL { SSL_free($0) }
 	}
 	
 	var state: State {
@@ -83,7 +82,11 @@ public class SSLSession {
 	public func read() -> [Int8] {
 		var buffer: [Int8] = Array(count: DEFAULT_BUFFER_SIZE, repeatedValue: 0)
 		let readSize = withSSL { SSL_read($0, &buffer, Int32(buffer.count)) }
-		return Array(buffer.prefix(Int(readSize)))
+		if readSize > 0 {
+			return Array(buffer.prefix(Int(readSize)))
+		} else {
+			return []
+		}
 	}
 	
 	public func shutdown() {
