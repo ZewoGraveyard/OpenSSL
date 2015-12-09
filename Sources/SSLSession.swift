@@ -60,6 +60,13 @@ public class SSLSession {
 		return State(rawValue: state) ?? .Error
 	}
 	
+	var peerCertificate: SSLCertificate? {
+		let cert = withSSL { SSL_get_peer_certificate($0) }
+		guard cert != nil else { return nil }
+		defer { X509_free(cert) }
+		return SSLCertificate(certificate: cert).fingerprint
+	}
+	
 	public func setIO(readIO readIO: SSLIO, writeIO: SSLIO) {
 		withSSL { ssl in
 			readIO.withBIO { rbio in
