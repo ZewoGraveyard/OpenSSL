@@ -28,7 +28,7 @@
 	import Darwin.C
 #endif
 
-import SSL
+import Core
 import COpenSSL
 
 public let DEFAULT_BUFFER_SIZE = 4096

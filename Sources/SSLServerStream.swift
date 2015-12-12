@@ -22,9 +22,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import SSL
+import Core
 import COpenSSL
-import Stream
 
 public final class SSLServerStream: SSLServerStreamType {
 	let rawStream: StreamType

@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import SSL
+import Core
 import COpenSSL
 
 public enum SSLContextError: ErrorType {
