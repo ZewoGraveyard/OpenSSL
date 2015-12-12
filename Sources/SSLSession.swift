@@ -25,7 +25,7 @@
 import COpenSSL
 
 public class SSLSession {
-	
+
 	public enum State: Int32 {
 		case Connect		= 0x1000
 		case Accept			= 0x2000
@@ -38,35 +38,37 @@ public class SSLSession {
 	}
 
 	internal var ssl: SSL
-	
+
 	public func withSSL<Result>(body: UnsafeMutablePointer<SSL> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&ssl) { try body($0) }
 	}
-	
+
 	public init(ssl: SSL) {
+		OpenSSL.initialize()
 		self.ssl = ssl
 	}
 
 	public init(context: SSLContext) {
+		OpenSSL.initialize()
 		self.ssl = context.withContext { SSL_new($0).memory }
 	}
-	
+
 	deinit {
 		self.shutdown()
 	}
-	
+
 	public var state: State {
 		let state = withSSL { SSL_state($0) }
 		return State(rawValue: state) ?? .Error
 	}
-	
+
 	public var peerCertificate: SSLCertificate? {
 		let cert = withSSL { SSL_get_peer_certificate($0) }
 		guard cert != nil else { return nil }
 		defer { X509_free(cert) }
 		return SSLCertificate(certificate: cert.memory)
 	}
-	
+
 	public func setIO(readIO readIO: SSLIO, writeIO: SSLIO) {
 		withSSL { ssl in
 			readIO.withBIO { rbio in
@@ -76,16 +78,16 @@ public class SSLSession {
 			}
 		}
 	}
-	
+
 	public func doHandshake() {
 		withSSL { SSL_do_handshake($0) }
 	}
-	
+
 	public func write(data: [Int8]) {
 		var data = data
 		withSSL { SSL_write($0, &data, Int32(data.count)) }
 	}
-	
+
 	public func read() -> [Int8] {
 		var buffer: [Int8] = Array(count: DEFAULT_BUFFER_SIZE, repeatedValue: 0)
 		let readSize = withSSL { SSL_read($0, &buffer, Int32(buffer.count)) }
@@ -95,7 +97,7 @@ public class SSLSession {
 			return []
 		}
 	}
-	
+
 	public func shutdown() {
 		withSSL { SSL_shutdown($0) }
 	}

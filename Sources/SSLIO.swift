@@ -25,22 +25,24 @@
 import COpenSSL
 
 public class SSLIO {
-	
+
 	public enum Method {
 		case Memory
 	}
-	
+
 	internal var bio: BIO
-	
+
 	public func withBIO<Result>(body: UnsafeMutablePointer<BIO> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&bio) { try body($0) }
 	}
-	
+
 	public init(bio: BIO) {
+		OpenSSL.initialize()
 		self.bio = bio
 	}
-	
+
 	public init(method: Method) {
+		OpenSSL.initialize()
 		let methodObj: UnsafeMutablePointer<BIO_METHOD>
 		switch method {
 		case .Memory:
@@ -48,12 +50,12 @@ public class SSLIO {
 		}
 		self.bio = BIO_new(methodObj).memory
 	}
-	
+
 	public func write(data: [Int8]) {
 		var data = data
 		withBIO { BIO_write($0, &data, Int32(data.count)) }
 	}
-	
+
 	public func read() -> [Int8] {
 		var buffer: [Int8] = Array(count: DEFAULT_BUFFER_SIZE, repeatedValue: 0)
 		let readSize = withBIO { BIO_read($0, &buffer, Int32(buffer.count)) }
@@ -63,5 +65,5 @@ public class SSLIO {
 			return []
 		}
 	}
-	
+
 }

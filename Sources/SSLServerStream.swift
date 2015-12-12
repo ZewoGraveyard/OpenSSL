@@ -41,15 +41,18 @@ public final class SSLServerStream: SSLServerStreamType {
 		guard let sslContext = context as? SSLServerContext else {
 			throw SSLStreamError.UnsupportedContext
 		}
+		
+		OpenSSL.initialize()
+
 		self.context = sslContext
 		self.rawStream = rawStream
-		
+
 		self.ssl = SSLSession(context: sslContext)
-		
+
 		self.readIO = SSLIO(method: .Memory)
 		self.writeIO = SSLIO(method: .Memory)
 		self.ssl.setIO(readIO: self.readIO, writeIO: self.writeIO)
-		
+
 		self.ssl.withSSL { ssl in
 			SSL_set_accept_state(ssl)
 		}

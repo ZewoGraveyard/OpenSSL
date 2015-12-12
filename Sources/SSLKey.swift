@@ -33,6 +33,7 @@ public class SSLKey {
 	}
 
 	public init(keyLength: Int32) {
+		OpenSSL.initialize()
 		let privateKey = EVP_PKEY_new()
 		let rsa = RSA_new()
 		let exponent = BN_new()

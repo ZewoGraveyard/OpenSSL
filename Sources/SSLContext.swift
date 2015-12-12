@@ -31,21 +31,23 @@ public enum SSLContextError: ErrorType {
 }
 
 public class SSLContext: SSLContextType {
-	
+
 	internal var context: SSL_CTX
-	
+
 	public func withContext<Result>(body: UnsafeMutablePointer<SSL_CTX> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&context) { try body($0) }
 	}
-	
+
 	public init(context: SSL_CTX) {
+		OpenSSL.initialize()
 		self.context = context
 	}
-	
+
 	public init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) {
+		OpenSSL.initialize()
 		self.context = SSL_CTX_new(getMethodFunc(method, type: type)).memory
 	}
-	
+
 	public func useCertificate(certificate: SSLCertificate) {
 		self.withContext { context in
 			certificate.withCertificate { certificate in
@@ -53,7 +55,7 @@ public class SSLContext: SSLContextType {
 			}
 		}
 	}
-	
+
 	public func usePrivateKey(privateKey: SSLKey) {
 		self.withContext { context in
 			privateKey.withKey { key in
@@ -61,18 +63,18 @@ public class SSLContext: SSLContextType {
 			}
 		}
 	}
-	
+
 	public func setCipherSuites(cipherSuites: String) {
 		self.withContext { context in
 			SSL_CTX_set_cipher_list(context, cipherSuites)
 		}
 	}
-	
+
 	public func setSrtpProfiles(srtpProfiles: String) throws {
 		try self.withContext { context in
 			let ret = SSL_CTX_set_tlsext_use_srtp(context, srtpProfiles)
 			guard ret >= 0 else { throw SSLContextError.Context }
 		}
 	}
-	
+
 }

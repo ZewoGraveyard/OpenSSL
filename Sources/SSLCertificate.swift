@@ -60,11 +60,11 @@ public enum SSLCertificateError: ErrorType {
 public class SSLCertificate {
 
 	internal var cert: X509
-	
+
 	public func withCertificate<Result>(body: UnsafeMutablePointer<X509> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&cert) { try body($0) }
 	}
-	
+
 	public var fingerprint: String {
 		return self.withCertificate { ptr in
 			let md = UnsafeMutablePointer<UInt8>.alloc(Int(EVP_MAX_MD_SIZE))
@@ -74,19 +74,23 @@ public class SSLCertificate {
 			return UnsafeMutableBufferPointer(start: md, count: Int(EVP_MAX_MD_SIZE)).generate().prefix(Int(n)).map({ $0.hexString }).joinWithSeparator(":")
 		}
 	}
-	
+
 	public init(certificate: X509) {
+        OpenSSL.initialize()
+        
 		self.cert = certificate
 	}
-	
+
 	public init(privateKey: SSLKey, commonName: String, expiresInDays: Int = 365, subjectAltName: String? = nil) throws {
+        OpenSSL.initialize()
+
 		var privateKey = privateKey.key
-		
+
 		var ret: Int32 = 0
 
 		let cert = X509_new()
 		guard cert != nil else { throw SSLCertificateError.Certificate }
-		
+
 		let subject = X509_NAME_new()
 		var ext = X509_EXTENSION_new()
 
@@ -95,7 +99,7 @@ public class SSLCertificate {
 
 		ret = X509_NAME_add_entry_by_txt(subject, "CN", (MBSTRING_FLAG|1), commonName, Int32(commonName.utf8.count), -1, 0)
 		guard ret >= 0 else { throw SSLCertificateError.Subject }
-		
+
 		ret = X509_set_issuer_name(cert, subject)
 		guard ret >= 0 else { throw SSLCertificateError.Subject }
 		ret = X509_set_subject_name(cert, subject)
