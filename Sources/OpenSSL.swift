@@ -43,7 +43,7 @@ public final class OpenSSL: SSLType {
 	}()
 
 	public static func initialize() {
-	    self._initialize
+	    let _ = self._initialize
 	}
 
 }
