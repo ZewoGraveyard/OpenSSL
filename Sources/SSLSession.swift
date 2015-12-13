@@ -59,7 +59,7 @@ public class SSLSession {
 
 	public var state: State {
 		let state = withSSL { SSL_state($0) }
-		return State(rawValue: state) ?? .Error
+		return State(rawValue: state & ~State.Mask.rawValue) ?? .Error
 	}
 
 	public var peerCertificate: SSLCertificate? {

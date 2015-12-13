@@ -1,4 +1,4 @@
-// OpenSSL.swift
+// SSLClientContext.swift
 //
 // The MIT License (MIT)
 //
@@ -22,37 +22,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if os(Linux)
-	import Glibc
-#else
-	import Darwin.C
-#endif
-
 import Core
 import COpenSSL
 
-public let DEFAULT_BUFFER_SIZE = 4096
+public final class SSLClientContext: SSLContext, SSLClientContextType {
 
-public final class OpenSSL: SSLType {
-
-	private static var _initialize: Void = {
-	    SSL_library_init()
-	    SSL_load_error_strings()
-	    ERR_load_crypto_strings()
-	    OPENSSL_config(nil)
-	}()
-
-	public static func initialize() {
-	    let _ = self._initialize
+	public var streamType: SSLClientStreamType.Type {
+		return SSLClientStream.self
 	}
 
-}
+	public init() {
+		super.init(method: .SSLv23, type: .Client)
 
-public func SSL_CTX_set_options(ctx: UnsafeMutablePointer<SSL_CTX>, _ op: Int)
-	return SSL_CTX_ctrl(ctx, SSL_CTRL_OPTIONS, op, nil)
-}
+		self.withContext { ctx in
+			//SSL_CTX_set_verify(ctx, SSL_VERIFY_NONE, nil)
+			SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER) { preverify, x509_ctx -> Int32 in
+				print("verify | preverify = \(preverify) | x509_ctx = \(x509_ctx)")
+				return preverify
+			}
+			SSL_CTX_set_verify_depth(ctx, 4)
+			SSL_CTX_set_options(ctx, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION)
+			guard SSL_CTX_load_verify_locations(ctx, "/root/Octopus/ca-bundle.crt", nil) == 1 else { print("SSL_CTX_load_verify_locations error"); return }
+		}
+	}
 
-private let SSL_CTRL_SET_ECDH_AUTO: Int32 = 94
-public func SSL_CTX_set_ecdh_auto(ctx: UnsafeMutablePointer<SSL_CTX>, _ onoff: Int) -> Int {
-	return SSL_CTX_ctrl(ctx, SSL_CTRL_SET_ECDH_AUTO, onoff, nil)
 }
