@@ -48,7 +48,7 @@ public final class OpenSSL: SSLType {
 
 }
 
-public func SSL_CTX_set_options(ctx: UnsafeMutablePointer<SSL_CTX>, _ op: Int)
+public func SSL_CTX_set_options(ctx: UnsafeMutablePointer<SSL_CTX>, _ op: Int) -> Int {
 	return SSL_CTX_ctrl(ctx, SSL_CTRL_OPTIONS, op, nil)
 }
 
