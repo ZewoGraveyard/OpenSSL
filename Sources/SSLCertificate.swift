@@ -61,7 +61,7 @@ public class SSLCertificate {
 
 	internal var cert: X509
 
-	public func withCertificate<Result>(body: UnsafeMutablePointer<X509> throws -> Result) rethrows -> Result {
+	public func withCertificate<Result>(@noescape body: UnsafeMutablePointer<X509> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&cert) { try body($0) }
 	}
 
@@ -77,7 +77,7 @@ public class SSLCertificate {
 
 	public init(certificate: X509) {
         OpenSSL.initialize()
-        
+
 		self.cert = certificate
 	}
 

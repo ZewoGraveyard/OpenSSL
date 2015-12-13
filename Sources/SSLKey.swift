@@ -28,7 +28,7 @@ public class SSLKey {
 
 	internal var key: EVP_PKEY
 
-	public func withKey<Result>(body: UnsafeMutablePointer<EVP_PKEY> throws -> Result) rethrows -> Result {
+	public func withKey<Result>(@noescape body: UnsafeMutablePointer<EVP_PKEY> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&key) { try body($0) }
 	}
 

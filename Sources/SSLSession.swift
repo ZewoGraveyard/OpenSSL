@@ -39,7 +39,7 @@ public class SSLSession {
 
 	internal var ssl: SSL
 
-	public func withSSL<Result>(body: UnsafeMutablePointer<SSL> throws -> Result) rethrows -> Result {
+	public func withSSL<Result>(@noescape body: UnsafeMutablePointer<SSL> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&ssl) { try body($0) }
 	}
 

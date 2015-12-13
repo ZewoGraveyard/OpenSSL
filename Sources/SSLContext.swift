@@ -34,7 +34,7 @@ public class SSLContext: SSLContextType {
 
 	internal var context: SSL_CTX
 
-	public func withContext<Result>(body: UnsafeMutablePointer<SSL_CTX> throws -> Result) rethrows -> Result {
+	public func withContext<Result>(@noescape body: UnsafeMutablePointer<SSL_CTX> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&context) { try body($0) }
 	}
 

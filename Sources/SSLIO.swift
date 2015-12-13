@@ -32,7 +32,7 @@ public class SSLIO {
 
 	internal var bio: BIO
 
-	public func withBIO<Result>(body: UnsafeMutablePointer<BIO> throws -> Result) rethrows -> Result {
+	public func withBIO<Result>(@noescape body: UnsafeMutablePointer<BIO> throws -> Result) rethrows -> Result {
 		return try withUnsafeMutablePointer(&bio) { try body($0) }
 	}
 
