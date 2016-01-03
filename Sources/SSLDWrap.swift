@@ -78,7 +78,7 @@ private func dwrap_new(bio: UnsafeMutablePointer<BIO>) -> Int32 {
 	memset(ctx, 0, sizeof(BIO_F_DWRAP_CTX))
 	
 	let b = bio.memory
-	bio.memory = BIO(method: b.method, callback: b.callback, cb_arg: b.cb_arg, `init`: 1, shutdown: b.shutdown, flags: 0, retry_reason: b.retry_reason, num: b.num, ptr: ctx, next_bio: b.next_bio, prev_bio: b.prev_bio, references: b.references, num_read: b.num_read, num_write: b.num_write, ex_data: b.ex_data)
+	bio.memory = BIO(method: b.method, callback: b.callback, cb_arg: b.cb_arg, init: 1, shutdown: b.shutdown, flags: 0, retry_reason: b.retry_reason, num: b.num, ptr: ctx, next_bio: b.next_bio, prev_bio: b.prev_bio, references: b.references, num_read: b.num_read, num_write: b.num_write, ex_data: b.ex_data)
 	
 	return 1
 }
@@ -89,7 +89,7 @@ private func dwrap_free(bio: UnsafeMutablePointer<BIO>) -> Int32 {
 	OPENSSL_free(bio.memory.ptr)
 	
 	let b = bio.memory
-	bio.memory = BIO(method: b.method, callback: b.callback, cb_arg: b.cb_arg, `init`: 0, shutdown: b.shutdown, flags: 0, retry_reason: b.retry_reason, num: b.num, ptr: nil, next_bio: b.next_bio, prev_bio: b.prev_bio, references: b.references, num_read: b.num_read, num_write: b.num_write, ex_data: b.ex_data)
+	bio.memory = BIO(method: b.method, callback: b.callback, cb_arg: b.cb_arg, init: 0, shutdown: b.shutdown, flags: 0, retry_reason: b.retry_reason, num: b.num, ptr: nil, next_bio: b.next_bio, prev_bio: b.prev_bio, references: b.references, num_read: b.num_read, num_write: b.num_write, ex_data: b.ex_data)
 	
 	return 1
 }
