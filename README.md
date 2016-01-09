@@ -10,6 +10,17 @@ OpenSSL
 
 ## Installation
 
+### OSX 
+
+- Install openssl using homebrew
+
+```bash
+$ brew install openssl
+$ brew link openssl --force # the OpenSSL headers & dylib are not by default symlinked to /usr/local/lib by homebrew
+```
+
+### Linux
+
 - Install `libssl-dev`
 
 ```bash
