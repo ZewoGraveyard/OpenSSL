@@ -6,11 +6,11 @@ OpenSSL
 [![License MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://tldrlegal.com/license/mit-license)
 [![Slack Status](http://slack.zewo.io/badge.svg)](http://slack.zewo.io)
 
-**OpenSSL** helpers for **Swift 2.2**.
+**OpenSSL** for **Swift 2.2**.
 
 ## Installation
 
-### OSX 
+### OSX
 
 - Install openssl using homebrew
 
@@ -34,7 +34,7 @@ import PackageDescription
 
 let package = Package(
 	dependencies: [
-		.Package(url: "https://github.com/Zewo/OpenSSL.git", majorVersion: 0, minor: 1)
+		.Package(url: "https://github.com/Zewo/OpenSSL.git", majorVersion: 0, minor: 2)
 	]
 )
 

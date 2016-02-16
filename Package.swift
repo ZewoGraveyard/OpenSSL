@@ -7,10 +7,9 @@ import PackageDescription
 #endif
 
 let package = Package(
-	name: "OpenSSL",
-	dependencies: [
-		.Package(url: openSSLURL, majorVersion: 0, minor: 1),
-		.Package(url: "https://github.com/Zewo/Core.git", majorVersion: 0, minor: 1),
-		.Package(url: "https://github.com/Zewo/CURIParser.git", majorVersion: 0, minor: 1)
-	]
+    name: "OpenSSL",
+    dependencies: [
+        .Package(url: openSSLURL, majorVersion: 0, minor: 2),
+        .Package(url: "https://github.com/Zewo/Stream.git", majorVersion: 0, minor: 2)
+    ]
 )
