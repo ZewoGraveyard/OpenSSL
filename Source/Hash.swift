@@ -46,7 +46,7 @@ private extension HashType {
 	}
 }
 
-public struct SHA {
+public struct Hash {
 	
 	public static func hash(type: HashType, message: Data) -> Data {
 		var hashBuf = Data.bufferWithSize(Int(SHA_DIGEST_LENGTH))
