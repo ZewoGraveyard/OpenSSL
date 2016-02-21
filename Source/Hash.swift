@@ -30,6 +30,21 @@ public enum HashType {
 }
 
 private extension HashType {
+	var digestLength: Int {
+		switch self {
+		case .SHA1:
+			return Int(SHA_DIGEST_LENGTH)
+		case .SHA224:
+			return Int(SHA224_DIGEST_LENGTH)
+		case .SHA256:
+			return Int(SHA256_DIGEST_LENGTH)
+		case .SHA384:
+			return Int(SHA384_DIGEST_LENGTH)
+		case .SHA512:
+			return Int(SHA512_DIGEST_LENGTH)
+		}
+	}
+	
 	var function: ((UnsafePointer<UInt8>, Int, UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8>) {
 		switch self {
 		case .SHA1:
@@ -49,7 +64,7 @@ private extension HashType {
 public struct Hash {
 	
 	public static func hash(type: HashType, message: Data) -> Data {
-		var hashBuf = Data.bufferWithSize(Int(SHA_DIGEST_LENGTH))
+		var hashBuf = Data.bufferWithSize(Int(type.digestLength))
 		message.withUnsafeBufferPointer { ptr in
 			hashBuf.withUnsafeMutableBufferPointer { bufPtr in
 				type.function(ptr.baseAddress, ptr.count, bufPtr.baseAddress)
