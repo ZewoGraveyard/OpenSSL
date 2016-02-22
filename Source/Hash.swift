@@ -128,11 +128,11 @@ public struct Hash {
 			EVP_DigestInit_ex(ctx, hashType.evp, nil)
 			EVP_DigestUpdate(ctx, UnsafePointer<Void>(digestPtr.baseAddress), digestPtr.count)
 			var signLen: UInt32 = 0
-			var buf = Data.bufferWithSize(256)
+			var buf = Data.bufferWithSize(Int(EVP_PKEY_size(key.key)))
 			buf.withUnsafeMutableBufferPointer { ptr in
 				EVP_SignFinal(ctx, ptr.baseAddress, &signLen, key.key)
 			}
-			return buf
+			return buf.prefix(Int(signLen))
 		}
 	}
 	
