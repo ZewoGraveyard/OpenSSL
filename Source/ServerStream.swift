@@ -29,9 +29,9 @@ public final class SSLServerStream: StreamType {
     private(set) public var metadata: [String: Any] = [:]
 	private let context: SSLServerContext
     private let rawStream: StreamType
-    private let readIO: SSLIO
-    private let writeIO: SSLIO
-	private let ssl: SSLSession
+    private let readIO: IO
+    private let writeIO: IO
+	private let ssl: Session
 
     public var closed: Bool = false
 
@@ -43,10 +43,10 @@ public final class SSLServerStream: StreamType {
         self.context = context
         self.rawStream = rawStream
 
-        readIO = try SSLIO(method: .Memory)
-        writeIO = try SSLIO(method: .Memory)
+        readIO = try IO(method: .Memory)
+        writeIO = try IO(method: .Memory)
 
-		ssl = try SSLSession(context: context)
+		ssl = try Session(context: context)
 		ssl.setIO(readIO: readIO, writeIO: writeIO)
 		ssl.setAcceptState()
 	}
@@ -58,7 +58,7 @@ public final class SSLServerStream: StreamType {
         while !ssl.initializationFinished {
             do {
                 try ssl.handshake()
-            } catch SSLSessionError.WantRead {}
+            } catch Session.Error.WantRead {}
             try send()
             try rawStream.flush()
             let data = try rawStream.receive()
@@ -70,7 +70,7 @@ public final class SSLServerStream: StreamType {
         while true {
             do {
                 decriptedData += try ssl.read()
-            } catch SSLSessionError.WantRead {
+            } catch Session.Error.WantRead {
                 if decriptedData.count > 0 {
                     return decriptedData
                 }
@@ -97,7 +97,7 @@ public final class SSLServerStream: StreamType {
         do {
             let data = try writeIO.read()
             try rawStream.send(data)
-        } catch SSLIOError.ShouldRetry {
+        } catch IO.Error.ShouldRetry {
             return
         }
 	}

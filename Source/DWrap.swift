@@ -32,12 +32,7 @@
 //
 //	====================================================================
 
-#if os(Linux)
-	import Glibc
-#else
-	import Darwin.C
-#endif
-
+import System
 import COpenSSL
 
 public let BIO_TYPE_DWRAP: Int32 = (50 | 0x0400 | 0x0200)

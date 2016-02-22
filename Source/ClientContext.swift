@@ -24,41 +24,41 @@
 
 import COpenSSL
 
-public final class SSLClientContext: SSLContext {
+public final class SSLClientContext: Context {
     public init(verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil) throws {
 		try super.init(method: .SSLv23, type: .Client)
 
         SSL_CTX_set_verify(context, SSL_VERIFY_PEER, nil)
 
         if SSL_CTX_set_default_verify_paths(context) != 1 {
-            throw SSLContextError.Certificate(description: lastSSLErrorDescription)
+            throw Context.Error.Certificate(description: lastSSLErrorDescription)
         }
 
         if let verifyBundle = verifyBundle {
             if SSL_CTX_load_verify_locations(context, verifyBundle, nil) != 1 {
-                throw SSLContextError.Certificate(description: lastSSLErrorDescription)
+                throw Context.Error.Certificate(description: lastSSLErrorDescription)
             }
         }
 		
 		if let certificateChain = certificateChain {
 			if SSL_CTX_use_certificate_chain_file(context, certificateChain) != 1 {
-				throw SSLContextError.Certificate(description: lastSSLErrorDescription)
+				throw Context.Error.Certificate(description: lastSSLErrorDescription)
 			}
 		}
 
 		if let certificate = certificate {
 			if SSL_CTX_use_certificate_file(context, certificate, SSL_FILETYPE_PEM) != 1 {
-				throw SSLContextError.Certificate(description: lastSSLErrorDescription)
+				throw Context.Error.Certificate(description: lastSSLErrorDescription)
 			}
 		}
 
 		if let privateKey = privateKey {
 			if SSL_CTX_use_PrivateKey_file(context, privateKey, SSL_FILETYPE_PEM) != 1 {
-				throw SSLContextError.Certificate(description: lastSSLErrorDescription)
+				throw Context.Error.Certificate(description: lastSSLErrorDescription)
 			}
 
 			if SSL_CTX_check_private_key(context) != 1 {
-				throw SSLContextError.Certificate(description: lastSSLErrorDescription)
+				throw Context.Error.Certificate(description: lastSSLErrorDescription)
 			}
 		}
 	}

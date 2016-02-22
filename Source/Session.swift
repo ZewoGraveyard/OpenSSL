@@ -24,14 +24,15 @@
 
 import COpenSSL
 
-public enum SSLSessionError: ErrorType {
-    case Session(description: String)
-    case WantRead(description: String)
-    case WantWrite(description: String)
-    case ZeroReturn(description: String)
-}
-
-public class SSLSession {
+public class Session {
+	
+	public enum Error: ErrorType {
+		case Session(description: String)
+		case WantRead(description: String)
+		case WantWrite(description: String)
+		case ZeroReturn(description: String)
+	}
+	
 	public enum State: Int32 {
 		case Connect		= 0x1000
 		case Accept			= 0x2000
@@ -46,13 +47,13 @@ public class SSLSession {
 
     var ssl: UnsafeMutablePointer<SSL>
 
-	public init(context: SSLContext) throws {
+	public init(context: Context) throws {
 		OpenSSL.initialize()
 
         ssl = SSL_new(context.context)
 
         if ssl == nil {
-            throw SSLSessionError.Session(description: lastSSLErrorDescription)
+            throw Error.Session(description: lastSSLErrorDescription)
         }
 	}
 
@@ -78,7 +79,7 @@ public class SSLSession {
 		return state ?? .Unknown
 	}
 
-	public var peerCertificate: SSLCertificate? {
+	public var peerCertificate: Certificate? {
 		let certificate = SSL_get_peer_certificate(ssl)
 
         guard certificate != nil else {
@@ -89,10 +90,10 @@ public class SSLSession {
             X509_free(certificate)
         }
 
-		return SSLCertificate(certificate: certificate)
+		return Certificate(certificate: certificate)
 	}
 
-	public func setIO(readIO readIO: SSLIO, writeIO: SSLIO) {
+	public func setIO(readIO readIO: IO, writeIO: IO) {
         SSL_set_bio(ssl, readIO.bio, writeIO.bio)
 	}
 
@@ -106,11 +107,11 @@ public class SSLSession {
         if result <= 0 {
             switch SSL_get_error(ssl, result) {
             case SSL_ERROR_WANT_READ:
-                throw SSLSessionError.WantRead(description: lastSSLErrorDescription)
+                throw Error.WantRead(description: lastSSLErrorDescription)
             case SSL_ERROR_WANT_WRITE:
-                throw SSLSessionError.WantWrite(description: lastSSLErrorDescription)
+                throw Error.WantWrite(description: lastSSLErrorDescription)
             default:
-                throw SSLSessionError.Session(description: lastSSLErrorDescription)
+                throw Error.Session(description: lastSSLErrorDescription)
             }
         }
 	}
@@ -132,13 +133,13 @@ public class SSLSession {
             let error = SSL_get_error(ssl, result)
             switch error {
             case SSL_ERROR_WANT_READ:
-                throw SSLSessionError.WantRead(description: lastSSLErrorDescription)
+                throw Error.WantRead(description: lastSSLErrorDescription)
             case SSL_ERROR_WANT_WRITE:
-                throw SSLSessionError.WantWrite(description: lastSSLErrorDescription)
+                throw Error.WantWrite(description: lastSSLErrorDescription)
             case SSL_ERROR_ZERO_RETURN:
-                throw SSLSessionError.ZeroReturn(description: lastSSLErrorDescription)
+                throw Error.ZeroReturn(description: lastSSLErrorDescription)
             default:
-                throw SSLSessionError.Session(description: lastSSLErrorDescription)
+                throw Error.Session(description: lastSSLErrorDescription)
             }
         }
 

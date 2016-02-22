@@ -34,7 +34,6 @@ public struct Random {
 	public static func getBytes(size: Int) throws -> Data {
 		var buf = Data.bufferWithSize(size)
 		guard buf.withUnsafeMutableBufferPointer({ RAND_bytes($0.baseAddress, Int32($0.count)) }) == 1 else {
-			let lastSSLErrorDescription = String.fromCString(ERR_reason_error_string(ERR_peek_error())) ?? "Unkown Error"
 			throw Error.Error(description: lastSSLErrorDescription)
 		}
 		return buf

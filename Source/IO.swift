@@ -23,14 +23,16 @@
 // SOFTWARE.
 
 import COpenSSL
+@_exported import File
 
-public enum SSLIOError: ErrorType {
-    case BIO(description: String)
-    case ShouldRetry(description: String)
-    case UnsupportedMethod(description: String)
-}
-
-public class SSLIO {
+public class IO {
+	
+	public enum Error: ErrorType {
+		case BIO(description: String)
+		case ShouldRetry(description: String)
+		case UnsupportedMethod(description: String)
+	}
+	
     public enum Method {
 		case Memory
 
@@ -42,14 +44,28 @@ public class SSLIO {
         }
 	}
 
-    var bio: UnsafeMutablePointer<BIO>
+	var bio: UnsafeMutablePointer<BIO>
+	
+	public init(filePath: String) throws {
+		OpenSSL.initialize()
+		
+		let file = try File(path: filePath)
+		
+		bio = BIO_new(Method.Memory.method)
+		
+		if bio == nil {
+			throw Error.BIO(description: lastSSLErrorDescription)
+		}
+		
+		try write(file.read())
+	}
 
 	public init(method: Method) throws {
 		OpenSSL.initialize()
 		bio = BIO_new(method.method)
 
         if bio == nil {
-            throw SSLIOError.BIO(description: lastSSLErrorDescription)
+            throw Error.BIO(description: lastSSLErrorDescription)
         }
 	}
 
@@ -60,9 +76,9 @@ public class SSLIO {
 
         if result < 0 {
             if shouldRetry {
-                throw SSLIOError.ShouldRetry(description: lastSSLErrorDescription)
+                throw Error.ShouldRetry(description: lastSSLErrorDescription)
             } else {
-                throw SSLIOError.BIO(description: lastSSLErrorDescription)
+                throw Error.BIO(description: lastSSLErrorDescription)
             }
         }
 
@@ -85,9 +101,9 @@ public class SSLIO {
 
         if result < 0 {
             if shouldRetry {
-                throw SSLIOError.ShouldRetry(description: lastSSLErrorDescription)
+                throw Error.ShouldRetry(description: lastSSLErrorDescription)
             } else {
-                throw SSLIOError.BIO(description: lastSSLErrorDescription)
+                throw Error.BIO(description: lastSSLErrorDescription)
             }
         }
 

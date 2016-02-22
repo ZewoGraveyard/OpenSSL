@@ -22,17 +22,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#if os(Linux)
-	import Glibc
-#else
-	import Darwin.C
-#endif
-
+import System
 import COpenSSL
 
 public let DEFAULT_BUFFER_SIZE = 4096
 
-public final class OpenSSL {
+public struct OpenSSL {
 	private static var _initialize: Void = {
 	    SSL_library_init()
 	    SSL_load_error_strings()

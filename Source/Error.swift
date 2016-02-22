@@ -1,4 +1,4 @@
-// SSLKey.swift
+// SSLError.swift
 //
 // The MIT License (MIT)
 //
@@ -24,16 +24,6 @@
 
 import COpenSSL
 
-public class SSLKey {
-    var privateKey: UnsafeMutablePointer<EVP_PKEY>
-
-	public init(keyLength: Int32) {
-		OpenSSL.initialize()
-		privateKey = EVP_PKEY_new()
-		let rsa = RSA_new()
-		let exponent = BN_new()
-		BN_set_word(exponent, 0x10001)
-		RSA_generate_key_ex(rsa, keyLength, exponent, nil)
-		EVP_PKEY_set1_RSA(privateKey, rsa)
-	}
+var lastSSLErrorDescription: String {
+    return String.fromCString(ERR_reason_error_string(ERR_get_error())) ?? "Unknown Error"
 }

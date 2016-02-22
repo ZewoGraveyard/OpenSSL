@@ -29,7 +29,7 @@ public enum HashType {
 	case SHA1, SHA224, SHA256, SHA384, SHA512
 }
 
-private extension HashType {
+internal extension HashType {
 	var digestLength: Int {
 		switch self {
 		case .SHA1:
@@ -59,11 +59,34 @@ private extension HashType {
 			return COpenSSL.SHA512
 		}
 	}
+	
+	var evp: UnsafePointer<EVP_MD> {
+		switch self {
+		case .SHA1:
+			return EVP_sha1()
+		case .SHA224:
+			return EVP_sha224()
+		case .SHA256:
+			return EVP_sha256()
+		case .SHA384:
+			return EVP_sha384()
+		case .SHA512:
+			return EVP_sha512()
+		}
+	}
 }
 
 public struct Hash {
 	
+	public enum Error: ErrorType {
+		case Error(description: String)
+	}
+	
+	// MARK: - Hash
+	
 	public static func hash(type: HashType, message: Data) -> Data {
+		OpenSSL.initialize()
+		
 		var hashBuf = Data.bufferWithSize(Int(type.digestLength))
 		message.withUnsafeBufferPointer { ptr in
 			hashBuf.withUnsafeMutableBufferPointer { bufPtr in
@@ -71,6 +94,46 @@ public struct Hash {
 			}
 		}
 		return hashBuf
+	}
+	
+	// MARK: - HMAC
+	
+	public static func hmac(type: HashType, key: Data, message: Data) -> Data {
+		OpenSSL.initialize()
+		
+		var resultLen: UInt32 = 0
+		let result = UnsafeMutablePointer<Byte>.alloc(Int(EVP_MAX_MD_SIZE))
+		key.withUnsafeBufferPointer { keyPtr in
+			message.withUnsafeBufferPointer { msgPtr in
+				COpenSSL.HMAC(type.evp, keyPtr.baseAddress, Int32(key.count), msgPtr.baseAddress, msgPtr.count, result, &resultLen)
+			}
+		}
+		let data = Data(Array(UnsafeBufferPointer<Byte>(start: result, count: Int(resultLen))))
+		result.destroy(Int(resultLen))
+		result.dealloc(Int(EVP_MAX_MD_SIZE))
+		return data
+	}
+	
+	// MARK: - RSA
+	
+	public static func rsa(hashType: HashType, key: Key, message: Data) throws -> Data {
+		OpenSSL.initialize()
+		
+		let ctx = EVP_MD_CTX_create()
+		guard ctx != nil else {
+			throw Error.Error(description: lastSSLErrorDescription)
+		}
+		
+		return message.withUnsafeBufferPointer { digestPtr in
+			EVP_DigestInit_ex(ctx, hashType.evp, nil)
+			EVP_DigestUpdate(ctx, UnsafePointer<Void>(digestPtr.baseAddress), digestPtr.count)
+			var signLen: UInt32 = 0
+			var buf = Data.bufferWithSize(256)
+			buf.withUnsafeMutableBufferPointer { ptr in
+				EVP_SignFinal(ctx, ptr.baseAddress, &signLen, key.key)
+			}
+			return buf
+		}
 	}
 	
 }

@@ -1,4 +1,4 @@
-// SSLError.swift
+// SSLKey.swift
 //
 // The MIT License (MIT)
 //
@@ -24,6 +24,26 @@
 
 import COpenSSL
 
-var lastSSLErrorDescription: String {
-    return String.fromCString(ERR_reason_error_string(ERR_peek_error())) ?? "Unkown Error"
+public class Key {
+    var key: UnsafeMutablePointer<EVP_PKEY>
+	
+	public init(key: UnsafeMutablePointer<EVP_PKEY>) {
+		OpenSSL.initialize()
+		self.key = key
+	}
+	
+	public init(filePath: String) throws {
+		let bio = try IO(filePath: filePath)
+		self.key = PEM_read_bio_PrivateKey(bio.bio, nil, nil, nil)
+	}
+
+	public init(keyLength: Int32) {
+		OpenSSL.initialize()
+		key = EVP_PKEY_new()
+		let rsa = RSA_new()
+		let exponent = BN_new()
+		BN_set_word(exponent, 0x10001)
+		RSA_generate_key_ex(rsa, keyLength, exponent, nil)
+		EVP_PKEY_set1_RSA(key, rsa)
+	}
 }

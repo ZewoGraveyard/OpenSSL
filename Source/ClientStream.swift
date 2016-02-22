@@ -29,9 +29,9 @@ public final class SSLClientStream: StreamType {
     private(set) public var metadata: [String: Any] = [:]
     private let context: SSLClientContext
     private let rawStream: StreamType
-    private let ssl: SSLSession
-    private let readIO: SSLIO
-    private let writeIO: SSLIO
+    private let ssl: Session
+    private let readIO: IO
+    private let writeIO: IO
 
     public var closed: Bool = false
 
@@ -43,10 +43,10 @@ public final class SSLClientStream: StreamType {
 		self.context = context
 		self.rawStream = rawStream
 
-		readIO = try SSLIO(method: .Memory)
-		writeIO = try SSLIO(method: .Memory)
+		readIO = try IO(method: .Memory)
+		writeIO = try IO(method: .Memory)
 
-        ssl = try SSLSession(context: context)
+        ssl = try Session(context: context)
 		ssl.setIO(readIO: readIO, writeIO: writeIO)
 
         ssl.setConnectState()
@@ -67,7 +67,7 @@ public final class SSLClientStream: StreamType {
         while true {
             do {
                 decriptedData += try ssl.read()
-            } catch SSLSessionError.WantRead {
+            } catch Session.Error.WantRead {
                 if decriptedData.count > 0 {
                     return decriptedData
                 }
@@ -78,7 +78,7 @@ public final class SSLClientStream: StreamType {
 				} catch StreamError.ClosedStream(let _data) {
 					return decriptedData + _data
 				}
-            } catch SSLSessionError.ZeroReturn {
+            } catch Session.Error.ZeroReturn {
                 return decriptedData
             }
         }
@@ -88,11 +88,11 @@ public final class SSLClientStream: StreamType {
         while !ssl.initializationFinished {
             do {
                 try ssl.handshake()
-            } catch SSLSessionError.WantRead {
+            } catch Session.Error.WantRead {
             }
             do {
                 try send()
-            } catch SSLIOError.ShouldRetry {
+            } catch IO.Error.ShouldRetry {
                 if ssl.initializationFinished {
                     break
                 }
@@ -106,7 +106,7 @@ public final class SSLClientStream: StreamType {
             ssl.write(data)
             do {
                 try send()
-            } catch SSLIOError.ShouldRetry {}
+            } catch IO.Error.ShouldRetry {}
         } else {
             try rawStream.send(data)
         }
