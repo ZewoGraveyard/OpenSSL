@@ -46,17 +46,9 @@ public class IO {
 
 	var bio: UnsafeMutablePointer<BIO>
 	
-	public init(filePath: String) throws {
-		OpenSSL.initialize()
-		
+	public convenience init(filePath: String) throws {
+		try self.init(method: .Memory)
 		let file = try File(path: filePath)
-		
-		bio = BIO_new(Method.Memory.method)
-		
-		if bio == nil {
-			throw Error.BIO(description: lastSSLErrorDescription)
-		}
-		
 		try write(file.read())
 	}
 
