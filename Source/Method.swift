@@ -30,7 +30,6 @@ public enum SSLMethodType {
 
 public enum SSLMethod {
 //	case SSLv2		// SSLv2
-	case SSLv3		// SSLv3
 	case SSLv23		// Negotiate highest available SSL/TLS version
 	case TLSv1		// TLSv1.0
 	case TLSv1_1	// TLSv1.1
@@ -51,15 +50,6 @@ func getMethod(method: SSLMethod, type: SSLMethodType = .Unspecified) -> UnsafeP
 		case .Client:
 			return SSLv2_client_method()
 		}*/
-	case .SSLv3:
-		switch type {
-		case .Unspecified:
-			return SSLv3_method()
-		case .Server:
-			return SSLv3_server_method()
-		case .Client:
-			return SSLv3_client_method()
-		}
 	case .SSLv23:
 		switch type {
 		case .Unspecified:
