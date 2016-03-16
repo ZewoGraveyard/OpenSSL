@@ -26,7 +26,7 @@ import COpenSSL
 
 public class Context {
 	
-	public enum Error: ErrorType {
+	public enum Error: ErrorProtocol {
 		case Context(description: String)
 		case Certificate(description: String)
 	}

@@ -35,18 +35,18 @@ private extension UInt8 {
 private extension X509 {
 
 	var validityNotBefore: UnsafeMutablePointer<ASN1_TIME> {
-		return cert_info.memory.validity.memory.notBefore
+		return cert_info.pointee.validity.pointee.notBefore
 	}
 
 	var validityNotAfter: UnsafeMutablePointer<ASN1_TIME> {
-		return cert_info.memory.validity.memory.notAfter
+		return cert_info.pointee.validity.pointee.notAfter
 	}
 
 }
 
 public class Certificate {
 	
-	public enum Error: ErrorType {
+	public enum Error: ErrorProtocol {
 		case Certificate
 		case Subject
 		case PrivateKey
@@ -57,11 +57,11 @@ public class Certificate {
     var certificate: UnsafeMutablePointer<X509>
 
 	public var fingerprint: String {
-        let md = UnsafeMutablePointer<UInt8>.alloc(Int(EVP_MAX_MD_SIZE))
-        defer { md.destroy(); md.dealloc(Int(EVP_MAX_MD_SIZE)) }
+        let md = UnsafeMutablePointer<UInt8>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
+        defer { md.deinitialize(); md.deallocateCapacity(Int(EVP_MAX_MD_SIZE)) }
         var n: UInt32 = 0
         X509_digest(certificate, EVP_sha256(), md, &n)
-        return UnsafeMutableBufferPointer(start: md, count: Int(EVP_MAX_MD_SIZE)).generate().prefix(Int(n)).map({ $0.hexString }).joinWithSeparator(":")
+        return UnsafeMutableBufferPointer(start: md, count: Int(EVP_MAX_MD_SIZE)).makeIterator().prefix(Int(n)).map({ $0.hexString }).joined(separator: ":")
 	}
 
 	public init(certificate: UnsafeMutablePointer<X509>) {
@@ -95,8 +95,8 @@ public class Certificate {
 		ret = X509_set_subject_name(certificate, subject)
 		guard ret >= 0 else { throw Error.Subject }
 
-		X509_gmtime_adj(certificate.memory.validityNotBefore, 0)
-		X509_gmtime_adj(certificate.memory.validityNotAfter, expiresInDays*86400)
+		X509_gmtime_adj(certificate.pointee.validityNotBefore, 0)
+		X509_gmtime_adj(certificate.pointee.validityNotAfter, expiresInDays*86400)
 
 		ret = X509_set_pubkey(certificate, privateKey)
 		guard ret >= 0 else { throw Error.PrivateKey }

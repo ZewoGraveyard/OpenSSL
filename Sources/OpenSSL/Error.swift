@@ -1,4 +1,4 @@
-// Random.swift
+// SSLError.swift
 //
 // The MIT License (MIT)
 //
@@ -23,20 +23,7 @@
 // SOFTWARE.
 
 import COpenSSL
-@_exported import Data
 
-public struct Random {
-	
-	public enum Error: ErrorType {
-		case Error(description: String)
-	}
-	
-	public static func getBytes(size: Int) throws -> Data {
-		var buf = Data.bufferWithSize(size)
-		guard buf.withUnsafeMutableBufferPointer({ RAND_bytes($0.baseAddress, Int32($0.count)) }) == 1 else {
-			throw Error.Error(description: lastSSLErrorDescription)
-		}
-		return buf
-	}
-	
+var lastSSLErrorDescription: String {
+    return String(validatingUTF8: ERR_reason_error_string(ERR_get_error())) ?? "Unknown Error"
 }

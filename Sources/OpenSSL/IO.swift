@@ -27,7 +27,7 @@ import COpenSSL
 
 public class IO {
 	
-	public enum Error: ErrorType {
+	public enum Error: ErrorProtocol {
 		case BIO(description: String)
 		case ShouldRetry(description: String)
 		case UnsupportedMethod(description: String)
@@ -82,7 +82,7 @@ public class IO {
     }
 
     public var shouldRetry: Bool {
-        return (bio.memory.flags & BIO_FLAGS_SHOULD_RETRY) != 0
+        return (bio.pointee.flags & BIO_FLAGS_SHOULD_RETRY) != 0
     }
 
 	public func read() throws -> Data {

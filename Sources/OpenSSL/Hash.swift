@@ -78,7 +78,7 @@ internal extension HashType {
 
 public struct Hash {
 	
-	public enum Error: ErrorType {
+	public enum Error: ErrorProtocol {
 		case Error(description: String)
 	}
 	
@@ -102,15 +102,15 @@ public struct Hash {
 		OpenSSL.initialize()
 		
 		var resultLen: UInt32 = 0
-		let result = UnsafeMutablePointer<Byte>.alloc(Int(EVP_MAX_MD_SIZE))
+		let result = UnsafeMutablePointer<Byte>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
 		key.withUnsafeBufferPointer { keyPtr in
 			message.withUnsafeBufferPointer { msgPtr in
 				COpenSSL.HMAC(type.evp, keyPtr.baseAddress, Int32(key.count), msgPtr.baseAddress, msgPtr.count, result, &resultLen)
 			}
 		}
 		let data = Data(Array(UnsafeBufferPointer<Byte>(start: result, count: Int(resultLen))))
-		result.destroy(Int(resultLen))
-		result.dealloc(Int(EVP_MAX_MD_SIZE))
+		result.deinitialize(count: Int(resultLen))
+		result.deallocateCapacity(Int(EVP_MAX_MD_SIZE))
 		return data
 	}
 	

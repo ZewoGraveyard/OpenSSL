@@ -26,7 +26,7 @@ import COpenSSL
 
 public class Session {
 	
-	public enum Error: ErrorType {
+	public enum Error: ErrorProtocol {
 		case Session(description: String)
 		case WantRead(description: String)
 		case WantWrite(description: String)
@@ -70,7 +70,7 @@ public class Session {
     }
 
     public var stateDescription: String {
-        return String.fromCString(SSL_state_string_long(ssl))!
+        return String(validatingUTF8: SSL_state_string_long(ssl))!
     }
 
 	public var state: State {
