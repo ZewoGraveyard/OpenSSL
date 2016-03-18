@@ -8,7 +8,6 @@ module COpenSSL {
     header "../x509v3.h"
     header "../bn.h"
     header "../srtp.h"
-    link "ssl"
-    link "crypto"
+    link "COpenSSL"
     export *
 }
