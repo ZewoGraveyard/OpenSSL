@@ -22,7 +22,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import System
+@_exported import File
 import COpenSSL
 
 public let DEFAULT_BUFFER_SIZE = 4096

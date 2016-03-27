@@ -25,14 +25,13 @@
 import COpenSSL
 
 public class Session {
-	
 	public enum Error: ErrorProtocol {
 		case Session(description: String)
 		case WantRead(description: String)
 		case WantWrite(description: String)
 		case ZeroReturn(description: String)
 	}
-	
+
 	public enum State: Int32 {
 		case Connect		= 0x1000
 		case Accept			= 0x2000
@@ -143,7 +142,7 @@ public class Session {
             }
         }
 
-        return data.prefix(Int(result))
+        return Data(data.prefix(Int(result)))
 	}
 
 	public func shutdown() {

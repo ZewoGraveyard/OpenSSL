@@ -26,12 +26,12 @@ import COpenSSL
 
 public class Key {
     var key: UnsafeMutablePointer<EVP_PKEY>
-	
+
 	public init(key: UnsafeMutablePointer<EVP_PKEY>) {
 		OpenSSL.initialize()
 		self.key = key
 	}
-	
+
 	public init(filePath: String) throws {
 		let bio = try IO(filePath: filePath)
 		self.key = PEM_read_bio_PrivateKey(bio.bio, nil, nil, nil)

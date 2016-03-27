@@ -23,22 +23,18 @@
 // SOFTWARE.
 
 import COpenSSL
-@_exported import Stream
 
-public final class SSLServerStream: StreamType {
-    private(set) public var metadata: [String: Any] = [:]
+public final class SSLServerStream: Stream {
 	private let context: SSLServerContext
-    private let rawStream: StreamType
+    private let rawStream: Stream
     private let readIO: IO
     private let writeIO: IO
 	private let ssl: Session
 
     public var closed: Bool = false
 
-	public init(context: SSLServerContext, rawStream: StreamType) throws {
+	public init(context: SSLServerContext, rawStream: Stream) throws {
 		OpenSSL.initialize()
-
-        metadata = rawStream.metadata
 
         self.context = context
         self.rawStream = rawStream

@@ -23,16 +23,14 @@
 // SOFTWARE.
 
 import COpenSSL
-@_exported import File
 
 public class IO {
-	
 	public enum Error: ErrorProtocol {
 		case BIO(description: String)
 		case ShouldRetry(description: String)
 		case UnsupportedMethod(description: String)
 	}
-	
+
     public enum Method {
 		case Memory
 
@@ -45,7 +43,7 @@ public class IO {
 	}
 
 	var bio: UnsafeMutablePointer<BIO>
-	
+
 	public convenience init(filePath: String) throws {
 		try self.init(method: .Memory)
 		let file = try File(path: filePath)
@@ -99,6 +97,6 @@ public class IO {
             }
         }
 
-        return data.prefix(Int(result))
+        return Data(data.prefix(Int(result)))
 	}
 }

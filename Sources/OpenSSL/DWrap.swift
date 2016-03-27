@@ -32,7 +32,6 @@
 //
 //	====================================================================
 
-import System
 import COpenSSL
 
 public let BIO_TYPE_DWRAP: Int32 = (50 | 0x0400 | 0x0200)
@@ -69,23 +68,23 @@ private struct BIO_F_DWRAP_CTX {
 private func dwrap_new(bio: UnsafeMutablePointer<BIO>) -> Int32 {
 	let ctx = OPENSSL_malloc(sizeof(BIO_F_DWRAP_CTX))
 	guard ctx != nil else { return 0 }
-	
+
 	memset(ctx, 0, sizeof(BIO_F_DWRAP_CTX))
-	
+
 	let b = bio.pointee
 	bio.pointee = BIO(method: b.method, callback: b.callback, cb_arg: b.cb_arg, init: 1, shutdown: b.shutdown, flags: 0, retry_reason: b.retry_reason, num: b.num, ptr: ctx, next_bio: b.next_bio, prev_bio: b.prev_bio, references: b.references, num_read: b.num_read, num_write: b.num_write, ex_data: b.ex_data)
-	
+
 	return 1
 }
 
 private func dwrap_free(bio: UnsafeMutablePointer<BIO>) -> Int32 {
 	if bio == nil { return 0 }
-	
+
 	OPENSSL_free(bio.pointee.ptr)
-	
+
 	let b = bio.pointee
 	bio.pointee = BIO(method: b.method, callback: b.callback, cb_arg: b.cb_arg, init: 0, shutdown: b.shutdown, flags: 0, retry_reason: b.retry_reason, num: b.num, ptr: nil, next_bio: b.next_bio, prev_bio: b.prev_bio, references: b.references, num_read: b.num_read, num_write: b.num_write, ex_data: b.ex_data)
-	
+
 	return 1
 }
 
@@ -93,13 +92,13 @@ private func dwrap_read(bio: UnsafeMutablePointer<BIO>, data: UnsafeMutablePoint
 	guard bio != nil && data != nil else { return 0 }
 
 	BIO_clear_retry_flags(bio)
-	
+
 	let ret = BIO_read(bio.pointee.next_bio, data, length)
 
 	if ret <= 0 {
 		BIO_copy_next_retry(bio)
 	}
-	
+
 	return ret
 }
 

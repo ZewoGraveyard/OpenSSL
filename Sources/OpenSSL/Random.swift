@@ -23,14 +23,12 @@
 // SOFTWARE.
 
 import COpenSSL
-@_exported import Data
 
 public struct Random {
-	
 	public enum Error: ErrorProtocol {
 		case Error(description: String)
 	}
-	
+
 	public static func getBytes(size: Int) throws -> Data {
 		var buf = Data.bufferWithSize(size)
 		guard buf.withUnsafeMutableBufferPointer({ RAND_bytes($0.baseAddress, Int32($0.count)) }) == 1 else {
@@ -38,5 +36,5 @@ public struct Random {
 		}
 		return buf
 	}
-	
+
 }

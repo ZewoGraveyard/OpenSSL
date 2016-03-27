@@ -23,7 +23,6 @@
 // SOFTWARE.
 
 import COpenSSL
-@_exported import Data
 
 public enum HashType {
 	case SHA1, SHA224, SHA256, SHA384, SHA512
@@ -44,7 +43,7 @@ internal extension HashType {
 			return Int(SHA512_DIGEST_LENGTH)
 		}
 	}
-	
+
 	var function: ((UnsafePointer<UInt8>, Int, UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8>) {
 		switch self {
 		case .SHA1:
@@ -59,7 +58,7 @@ internal extension HashType {
 			return COpenSSL.SHA512
 		}
 	}
-	
+
 	var evp: UnsafePointer<EVP_MD> {
 		switch self {
 		case .SHA1:
@@ -77,16 +76,16 @@ internal extension HashType {
 }
 
 public struct Hash {
-	
+
 	public enum Error: ErrorProtocol {
 		case Error(description: String)
 	}
-	
+
 	// MARK: - Hash
-	
+
 	public static func hash(type: HashType, message: Data) -> Data {
 		OpenSSL.initialize()
-		
+
 		var hashBuf = Data.bufferWithSize(Int(type.digestLength))
 		message.withUnsafeBufferPointer { ptr in
 			hashBuf.withUnsafeMutableBufferPointer { bufPtr in
@@ -95,12 +94,12 @@ public struct Hash {
 		}
 		return hashBuf
 	}
-	
+
 	// MARK: - HMAC
-	
+
 	public static func hmac(type: HashType, key: Data, message: Data) -> Data {
 		OpenSSL.initialize()
-		
+
 		var resultLen: UInt32 = 0
 		let result = UnsafeMutablePointer<Byte>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
 		key.withUnsafeBufferPointer { keyPtr in
@@ -113,17 +112,17 @@ public struct Hash {
 		result.deallocateCapacity(Int(EVP_MAX_MD_SIZE))
 		return data
 	}
-	
+
 	// MARK: - RSA
-	
+
 	public static func rsa(hashType: HashType, key: Key, message: Data) throws -> Data {
 		OpenSSL.initialize()
-		
+
 		let ctx = EVP_MD_CTX_create()
 		guard ctx != nil else {
 			throw Error.Error(description: lastSSLErrorDescription)
 		}
-		
+
 		return message.withUnsafeBufferPointer { digestPtr in
 			EVP_DigestInit_ex(ctx, hashType.evp, nil)
 			EVP_DigestUpdate(ctx, UnsafePointer<Void>(digestPtr.baseAddress), digestPtr.count)
@@ -132,8 +131,8 @@ public struct Hash {
 			buf.withUnsafeMutableBufferPointer { ptr in
 				EVP_SignFinal(ctx, ptr.baseAddress, &signLen, key.key)
 			}
-			return buf.prefix(Int(signLen))
+			return Data(buf.prefix(Int(signLen)))
 		}
 	}
-	
+
 }

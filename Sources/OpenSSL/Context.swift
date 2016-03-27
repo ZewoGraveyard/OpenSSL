@@ -25,12 +25,11 @@
 import COpenSSL
 
 public class Context {
-	
 	public enum Error: ErrorProtocol {
 		case Context(description: String)
 		case Certificate(description: String)
 	}
-	
+
 	var context: UnsafeMutablePointer<SSL_CTX>
 
 	public init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) throws {

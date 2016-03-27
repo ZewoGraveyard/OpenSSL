@@ -22,7 +22,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-import System
 import COpenSSL
 
 private extension UInt8 {
@@ -45,7 +44,7 @@ private extension X509 {
 }
 
 public class Certificate {
-	
+
 	public enum Error: ErrorProtocol {
 		case Certificate
 		case Subject
@@ -53,7 +52,7 @@ public class Certificate {
 		case Extension
 		case Sign
 	}
-	
+
     var certificate: UnsafeMutablePointer<X509>
 
 	public var fingerprint: String {
@@ -76,7 +75,7 @@ public class Certificate {
 		var ret: Int32 = 0
 
         certificate = X509_new()
-        
+
 		guard certificate != nil else {
             throw Error.Certificate
         }
