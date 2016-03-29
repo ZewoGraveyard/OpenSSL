@@ -1,4 +1,4 @@
-// SSLError.swift
+// Error.swift
 //
 // The MIT License (MIT)
 //
@@ -25,5 +25,11 @@
 import COpenSSL
 
 var lastSSLErrorDescription: String {
-    return String(validatingUTF8: ERR_reason_error_string(ERR_get_error())) ?? "Unknown Error"
+    let error = ERR_get_error()
+    let string = ERR_reason_error_string(error)
+    if string != nil {
+        return String(validatingUTF8: string) ?? "Unknown Error"
+    } else {
+        return "Unknown Error"
+    }
 }
