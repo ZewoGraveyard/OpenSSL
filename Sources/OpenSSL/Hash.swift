@@ -86,7 +86,7 @@ public struct Hash {
 	public static func hash(type: HashType, message: Data) -> Data {
 		OpenSSL.initialize()
 
-		var hashBuf = Data.bufferWithSize(Int(type.digestLength))
+        var hashBuf = Data.buffer(with: Int(type.digestLength))
 		message.withUnsafeBufferPointer { ptr in
 			hashBuf.withUnsafeMutableBufferPointer { bufPtr in
 				type.function(ptr.baseAddress, ptr.count, bufPtr.baseAddress)
@@ -127,7 +127,7 @@ public struct Hash {
 			EVP_DigestInit_ex(ctx, hashType.evp, nil)
 			EVP_DigestUpdate(ctx, UnsafePointer<Void>(digestPtr.baseAddress), digestPtr.count)
 			var signLen: UInt32 = 0
-			var buf = Data.bufferWithSize(Int(EVP_PKEY_size(key.key)))
+            var buf = Data.buffer(with: Int(EVP_PKEY_size(key.key)))
 			buf.withUnsafeMutableBufferPointer { ptr in
 				EVP_SignFinal(ctx, ptr.baseAddress, &signLen, key.key)
 			}

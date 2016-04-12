@@ -84,7 +84,7 @@ public class IO {
     }
 
 	public func read() throws -> Data {
-        var data = Data.bufferWithSize(DEFAULT_BUFFER_SIZE)
+        var data = Data.buffer(with: DEFAULT_BUFFER_SIZE)
         let result = data.withUnsafeMutableBufferPointer {
             BIO_read(bio, $0.baseAddress, Int32($0.count))
         }

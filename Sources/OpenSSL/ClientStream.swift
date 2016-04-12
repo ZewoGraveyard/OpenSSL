@@ -48,10 +48,10 @@ public final class SSLClientStream: Stream {
         ssl.setConnectState()
 	}
 
-	public func receive() throws -> Data {
+	public func receive(upTo byteCount: Int, timingOut deadline: Double) throws -> Data {
 		let data: Data
 		do {
-			data = try rawStream.receive()
+            data = try rawStream.receive(upTo: byteCount, timingOut: deadline)
 		} catch StreamError.closedStream(let _data) {
 			data = _data
 		}
@@ -69,7 +69,7 @@ public final class SSLClientStream: Stream {
                 }
 
 				do {
-					let data = try rawStream.receive()
+					let data = try rawStream.receive(upTo: byteCount, timingOut: deadline)
 					try readIO.write(data)
 				} catch StreamError.closedStream(let _data) {
 					return decriptedData + _data
@@ -80,7 +80,7 @@ public final class SSLClientStream: Stream {
         }
     }
 
-    public func send(data: Data) throws {
+    public func send(data: Data, timingOut deadline: Double) throws {
         while !ssl.initializationFinished {
             do {
                 try ssl.handshake()
@@ -94,7 +94,7 @@ public final class SSLClientStream: Stream {
                 }
             }
             try rawStream.flush()
-            let data = try rawStream.receive()
+            let data = try rawStream.receive(upTo: 1024, timingOut: deadline)
             try readIO.write(data)
         }
 
@@ -108,7 +108,7 @@ public final class SSLClientStream: Stream {
         }
     }
 
-    public func flush() throws {
+    public func flush(timingOut deadline: Double) throws {
         try rawStream.flush()
     }
 
