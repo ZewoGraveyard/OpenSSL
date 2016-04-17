@@ -1,7 +1,7 @@
 OpenSSL
 =======
 
-[![Swift 2.2](https://img.shields.io/badge/Swift-3.0-orange.svg?style=flat)](https://swift.org)
+[![Swift 3.0](https://img.shields.io/badge/Swift-3.0-orange.svg?style=flat)](https://swift.org)
 [![Platforms Linux](https://img.shields.io/badge/Platforms-Linux-lightgray.svg?style=flat)](https://swift.org/download/#linux)
 [![License MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://tldrlegal.com/license/mit-license)
 [![Slack Status](http://slack.zewo.io/badge.svg)](http://slack.zewo.io)
