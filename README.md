@@ -6,7 +6,7 @@ OpenSSL
 [![License MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=flat)](https://tldrlegal.com/license/mit-license)
 [![Slack Status](http://slack.zewo.io/badge.svg)](http://slack.zewo.io)
 
-**OpenSSL** for **Swift 2.2**.
+**OpenSSL** for **Swift 3.0**.
 
 ## Installation
 
