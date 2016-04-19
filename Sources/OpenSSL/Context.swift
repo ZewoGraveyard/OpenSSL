@@ -30,7 +30,7 @@ public class Context {
 		case Certificate(description: String)
 	}
 
-	var context: UnsafeMutablePointer<SSL_CTX>
+	var context: UnsafeMutablePointer<SSL_CTX>?
 
 	public init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) throws {
 		OpenSSL.initialize()

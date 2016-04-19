@@ -80,7 +80,7 @@ public final class SSLClientStream: Stream {
         }
     }
 
-    public func send(data: Data, timingOut deadline: Double) throws {
+    public func send(_ data: Data, timingOut deadline: Double) throws {
         while !ssl.initializationFinished {
             do {
                 try ssl.handshake()
@@ -112,8 +112,8 @@ public final class SSLClientStream: Stream {
         try rawStream.flush()
     }
 
-    public func close() -> Bool {
-        return rawStream.close()
+    public func close() throws {
+        try rawStream.close()
     }
 
     private func send() throws {

@@ -44,7 +44,7 @@ internal extension HashType {
 		}
 	}
 
-	var function: ((UnsafePointer<UInt8>, Int, UnsafeMutablePointer<UInt8>) -> UnsafeMutablePointer<UInt8>) {
+	var function: ((UnsafePointer<UInt8>!, Int, UnsafeMutablePointer<UInt8>!) -> UnsafeMutablePointer<UInt8>!) {
 		switch self {
 		case .SHA1:
 			return COpenSSL.SHA1
@@ -83,7 +83,7 @@ public struct Hash {
 
 	// MARK: - Hash
 
-	public static func hash(type: HashType, message: Data) -> Data {
+	public static func hash(_ type: HashType, message: Data) -> Data {
 		OpenSSL.initialize()
 
         var hashBuf = Data.buffer(with: Int(type.digestLength))
@@ -97,7 +97,7 @@ public struct Hash {
 
 	// MARK: - HMAC
 
-	public static func hmac(type: HashType, key: Data, message: Data) -> Data {
+	public static func hmac(_ type: HashType, key: Data, message: Data) -> Data {
 		OpenSSL.initialize()
 
 		var resultLen: UInt32 = 0
@@ -115,7 +115,7 @@ public struct Hash {
 
 	// MARK: - RSA
 
-	public static func rsa(hashType: HashType, key: Key, message: Data) throws -> Data {
+	public static func rsa(_ hashType: HashType, key: Key, message: Data) throws -> Data {
 		OpenSSL.initialize()
 
 		let ctx = EVP_MD_CTX_create()

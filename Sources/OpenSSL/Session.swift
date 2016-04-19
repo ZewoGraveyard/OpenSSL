@@ -44,7 +44,7 @@ public class Session {
         case Unknown        = -1
 	}
 
-    var ssl: UnsafeMutablePointer<SSL>
+    var ssl: UnsafeMutablePointer<SSL>?
 
 	public init(context: Context) throws {
 		OpenSSL.initialize()
@@ -92,7 +92,7 @@ public class Session {
 		return Certificate(certificate: certificate)
 	}
 
-	public func setIO(readIO readIO: IO, writeIO: IO) {
+	public func setIO(readIO: IO, writeIO: IO) {
         SSL_set_bio(ssl, readIO.bio, writeIO.bio)
 	}
 
@@ -115,7 +115,7 @@ public class Session {
         }
 	}
 
-	public func write(data: Data) {
+	public func write(_ data: Data) {
         data.withUnsafeBufferPointer {
             SSL_write(ssl, $0.baseAddress, Int32($0.count))
         }

@@ -53,7 +53,7 @@ public class Certificate {
 		case Sign
 	}
 
-    var certificate: UnsafeMutablePointer<X509>
+    var certificate: UnsafeMutablePointer<X509>?
 
 	public var fingerprint: String {
         let md = UnsafeMutablePointer<UInt8>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
@@ -76,7 +76,7 @@ public class Certificate {
 
         certificate = X509_new()
 
-		guard certificate != nil else {
+		guard let certificate = certificate else {
             throw Error.Certificate
         }
 

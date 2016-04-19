@@ -40,7 +40,7 @@ private var methods_dwrap = BIO_METHOD(type: BIO_TYPE_DWRAP, name: "dtls_wrapper
 	return BIO_callback_ctrl(bio.pointee.next_bio, cmd, fp)
 })
 
-private func getPointer<T>(arg: UnsafeMutablePointer<T>) -> UnsafeMutablePointer<T> {
+private func getPointer<T>(_ arg: UnsafeMutablePointer<T>) -> UnsafeMutablePointer<T> {
 	return arg
 }
 
@@ -48,16 +48,16 @@ public func BIO_f_dwrap() -> UnsafeMutablePointer<BIO_METHOD> {
 	return getPointer(&methods_dwrap)
 }
 
-func OPENSSL_malloc(num: Int, file: String = #file, line: Int = #line) -> UnsafeMutablePointer<Void> {
+func OPENSSL_malloc(_ num: Int, file: String = #file, line: Int = #line) -> UnsafeMutablePointer<Void>? {
 	return CRYPTO_malloc(Int32(num), file, Int32(line))
 }
 
-func OPENSSL_free(ptr: UnsafeMutablePointer<Void>) {
+func OPENSSL_free(_ ptr: UnsafeMutablePointer<Void>) {
 	CRYPTO_free(ptr)
 }
 
 let BIO_FLAGS_RWS = (BIO_FLAGS_READ|BIO_FLAGS_WRITE|BIO_FLAGS_IO_SPECIAL)
-func BIO_clear_retry_flags(b: UnsafeMutablePointer<BIO>) {
+func BIO_clear_retry_flags(_ b: UnsafeMutablePointer<BIO>) {
 	BIO_clear_flags(b, BIO_FLAGS_RWS|BIO_FLAGS_SHOULD_RETRY)
 }
 
@@ -65,9 +65,9 @@ private struct BIO_F_DWRAP_CTX {
 	var dgram_timer_exp: Bool
 }
 
-private func dwrap_new(bio: UnsafeMutablePointer<BIO>) -> Int32 {
-	let ctx = OPENSSL_malloc(sizeof(BIO_F_DWRAP_CTX))
-	guard ctx != nil else { return 0 }
+private func dwrap_new(bio: UnsafeMutablePointer<BIO>!) -> Int32 {
+	let maybeCtx = OPENSSL_malloc(sizeof(BIO_F_DWRAP_CTX))
+	guard let ctx = maybeCtx else { return 0 }
 
 	memset(ctx, 0, sizeof(BIO_F_DWRAP_CTX))
 
@@ -77,8 +77,8 @@ private func dwrap_new(bio: UnsafeMutablePointer<BIO>) -> Int32 {
 	return 1
 }
 
-private func dwrap_free(bio: UnsafeMutablePointer<BIO>) -> Int32 {
-	if bio == nil { return 0 }
+private func dwrap_free(bio: UnsafeMutablePointer<BIO>?) -> Int32 {
+	guard let bio = bio else { return 0 }
 
 	OPENSSL_free(bio.pointee.ptr)
 
@@ -88,8 +88,8 @@ private func dwrap_free(bio: UnsafeMutablePointer<BIO>) -> Int32 {
 	return 1
 }
 
-private func dwrap_read(bio: UnsafeMutablePointer<BIO>, data: UnsafeMutablePointer<Int8>, length: Int32) -> Int32 {
-	guard bio != nil && data != nil else { return 0 }
+private func dwrap_read(bio: UnsafeMutablePointer<BIO>?, data: UnsafeMutablePointer<Int8>?, length: Int32) -> Int32 {
+	guard let bio = bio, data = data else { return 0 }
 
 	BIO_clear_retry_flags(bio)
 
@@ -102,21 +102,21 @@ private func dwrap_read(bio: UnsafeMutablePointer<BIO>, data: UnsafeMutablePoint
 	return ret
 }
 
-private func dwrap_write(bio: UnsafeMutablePointer<BIO>, data: UnsafePointer<Int8>, length: Int32) -> Int32 {
-	guard bio != nil && data != nil && length > 0 else { return 0 }
+private func dwrap_write(bio: UnsafeMutablePointer<BIO>?, data: UnsafePointer<Int8>?, length: Int32) -> Int32 {
+	guard let bio = bio, let data = data where length > 0 else { return 0 }
 	return BIO_write(bio.pointee.next_bio, data, length)
 }
 
-private func dwrap_puts(bio: UnsafeMutablePointer<BIO>, data: UnsafePointer<Int8>) -> Int32 {
+private func dwrap_puts(bio: UnsafeMutablePointer<BIO>!, data: UnsafePointer<Int8>!) -> Int32 {
 	fatalError()
 }
 
-private func dwrap_gets(bio: UnsafeMutablePointer<BIO>, data: UnsafeMutablePointer<Int8>, length: Int32) -> Int32 {
+private func dwrap_gets(bio: UnsafeMutablePointer<BIO>!, data: UnsafeMutablePointer<Int8>!, length: Int32) -> Int32 {
 	fatalError()
 }
 
-private func dwrap_ctrl(bio: UnsafeMutablePointer<BIO>, cmd: Int32, num: Int, ptr: UnsafeMutablePointer<Void>) -> Int {
-	let ctx = UnsafeMutablePointer<BIO_F_DWRAP_CTX>(bio.pointee.ptr)
+private func dwrap_ctrl(bio: UnsafeMutablePointer<BIO>!, cmd: Int32, num: Int, ptr: UnsafeMutablePointer<Void>!) -> Int {
+	let ctx = UnsafeMutablePointer<BIO_F_DWRAP_CTX>(bio.pointee.ptr)!
 	var ret: Int
 	switch cmd {
 	case BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP:
