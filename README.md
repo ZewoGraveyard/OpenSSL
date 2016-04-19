@@ -40,6 +40,12 @@ let package = Package(
 
 ```
 
+### Build
+
+```bach
+$ swift build -Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/
+```
+
 ## Community
 
 [![Slack](http://s13.postimg.org/ybwy92ktf/Slack.png)](http://slack.zewo.io)
