@@ -19,6 +19,12 @@ $ brew install openssl
 $ brew link openssl --force # the OpenSSL headers & dylib are not by default symlinked to /usr/local/lib by homebrew
 ```
 
+- Build
+
+```bach
+$ swift build -Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/
+```
+
 ### Linux
 
 - Install `libssl-dev`
@@ -38,12 +44,6 @@ let package = Package(
 	]
 )
 
-```
-
-### Build
-
-```bach
-$ swift build -Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/
 ```
 
 ## Community
