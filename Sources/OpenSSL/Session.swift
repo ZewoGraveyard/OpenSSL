@@ -68,6 +68,15 @@ public class Session {
         SSL_set_connect_state(ssl)
     }
 
+    public func setServerNameIndication(hostname: String) throws {
+        let result = hostname.withCString {
+            SSL_ctrl(ssl, SSL_CTRL_SET_TLSEXT_HOSTNAME, Int(TLSEXT_NAMETYPE_host_name), UnsafeMutablePointer<Void>($0))
+        }
+        if result == 0 {
+            throw Error.Session(description: lastSSLErrorDescription)
+        }
+    }
+
     public var stateDescription: String {
         return String(validatingUTF8: SSL_state_string_long(ssl))!
     }

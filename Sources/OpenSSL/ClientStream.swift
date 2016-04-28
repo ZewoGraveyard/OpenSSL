@@ -33,7 +33,7 @@ public final class SSLClientStream: Stream {
 
     public var closed: Bool = false
 
-	public init(context: SSLClientContext, rawStream: Stream) throws {
+    public init(context: SSLClientContext, rawStream: Stream, SNIHostname: String? = nil) throws {
 		OpenSSL.initialize()
 
 		self.context = context
@@ -44,6 +44,10 @@ public final class SSLClientStream: Stream {
 
         ssl = try Session(context: context)
 		ssl.setIO(readIO: readIO, writeIO: writeIO)
+
+        if let hostname = SNIHostname {
+            try ssl.setServerNameIndication(hostname: hostname)
+        }
 
         ssl.setConnectState()
 	}
@@ -81,20 +85,19 @@ public final class SSLClientStream: Stream {
     }
 
     public func send(_ data: Data, timingOut deadline: Double) throws {
-        while !ssl.initializationFinished {
+        loop: while !ssl.initializationFinished {
             do {
                 try ssl.handshake()
-            } catch Session.Error.WantRead {
-            }
+            } catch Session.Error.WantRead {}
             do {
                 try send()
             } catch IO.Error.ShouldRetry {
                 if ssl.initializationFinished {
-                    break
+                    break loop
                 }
             }
             try rawStream.flush()
-            let data = try rawStream.receive(upTo: 1024, timingOut: deadline)
+            let data = try rawStream.receive(upTo: 16384, timingOut: deadline)
             try readIO.write(data)
         }
 
