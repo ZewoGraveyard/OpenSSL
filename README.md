@@ -36,7 +36,7 @@ import PackageDescription
 
 let package = Package(
 	dependencies: [
-		.Package(url: "https://github.com/Zewo/OpenSSL.git", majorVersion: 0, minor: 5),
+		.Package(url: "https://github.com/Zewo/OpenSSL.git", majorVersion: 0, minor: 6),
 	]
 )
 
@@ -45,7 +45,7 @@ let package = Package(
 - Build your app/library with the given flags
 
 ```sh
-swift build -Xcc -I/usr/local/include -Xlinker -L/usr/local/lib
+swift build
 ```
 
 ## Support
