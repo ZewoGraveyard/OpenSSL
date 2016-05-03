@@ -42,12 +42,6 @@ let package = Package(
 
 ```
 
-- Build your app/library with the given flags
-
-```sh
-swift build
-```
-
 ## Support
 
 If you need any help you can join our [Slack](http://slack.zewo.io) and go to the **#help** channel. Or you can create a Github [issue](https://github.com/Zewo/Zewo/issues/new) in our main repository. When stating your issue be sure to add enough details, specify what module is causing the problem and reproduction steps.
