@@ -27,16 +27,15 @@ import COpenSSL
 typealias CCallback = @convention(c) Void -> Void
 
 public final class SSLClientContext: Context {
-    public init(verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil) throws {
+    public init(verifyBundle: String? = nil,
+      certificate: String? = nil,
+      privateKey: String? = nil,
+      certificateChain: String? = nil) throws {
 		try super.init(method: .SSLv23, type: .Client)
 
         SSL_CTX_set_verify(context, SSL_VERIFY_PEER, nil)
         SSL_CTX_set_verify_depth(context, 4)
         SSL_CTX_set_options(context, SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION)
-
-        if SSL_CTX_set_cipher_list(context, "HIGH:!aNULL:!kRSA:!PSK:!SRP:!MD5:!RC4") != 1 {
-            throw Context.Error.Certificate(description: lastSSLErrorDescription)
-        }
 
         if SSL_CTX_set_default_verify_paths(context) != 1 {
             throw Context.Error.Certificate(description: lastSSLErrorDescription)
