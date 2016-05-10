@@ -156,5 +156,6 @@ public class Session {
 
 	public func shutdown() {
 		SSL_shutdown(ssl)
+        SSL_free(ssl)
 	}
 }

@@ -41,6 +41,10 @@ public class Context {
         }
 	}
 
+	deinit {
+		SSL_CTX_free(context)
+	}
+
 	public func useCertificate(certificate: Certificate) throws {
         if SSL_CTX_use_certificate(context, certificate.certificate) != 1 {
             throw Error.Context(description: lastSSLErrorDescription)
