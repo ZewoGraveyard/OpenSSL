@@ -27,24 +27,24 @@ import COpenSSL
 public final class SSLServerContext: Context {
 	public init(certificate: String, privateKey: String, certificateChain: String? = nil) throws {
 		try super.init(method: .SSLv23, type: .Server)
-        SSL_CTX_set_verify(context, SSL_VERIFY_NONE, nil)
+		SSL_CTX_set_verify(context, SSL_VERIFY_NONE, nil)
 
-        if let certificateChain = certificateChain {
-            if SSL_CTX_use_certificate_chain_file(context, certificateChain) != 1 {
-                throw Context.Error.Certificate(description: lastSSLErrorDescription)
-            }
-        }
+		if let certificateChain = certificateChain {
+			if SSL_CTX_use_certificate_chain_file(context, certificateChain) != 1 {
+				throw Context.Error.Certificate(description: lastSSLErrorDescription)
+			}
+		}
 
-        if SSL_CTX_use_certificate_file(context, certificate, SSL_FILETYPE_PEM) != 1 {
-            throw Context.Error.Certificate(description: lastSSLErrorDescription)
-        }
+		if SSL_CTX_use_certificate_file(context, certificate, SSL_FILETYPE_PEM) != 1 {
+			throw Context.Error.Certificate(description: lastSSLErrorDescription)
+		}
 
-        if SSL_CTX_use_PrivateKey_file(context, privateKey, SSL_FILETYPE_PEM) != 1 {
-            throw Context.Error.Certificate(description: lastSSLErrorDescription)
-        }
+		if SSL_CTX_use_PrivateKey_file(context, privateKey, SSL_FILETYPE_PEM) != 1 {
+			throw Context.Error.Certificate(description: lastSSLErrorDescription)
+		}
 
-        if SSL_CTX_check_private_key(context) != 1 {
-            throw Context.Error.Certificate(description: lastSSLErrorDescription)
-        }
+		if SSL_CTX_check_private_key(context) != 1 {
+			throw Context.Error.Certificate(description: lastSSLErrorDescription)
+		}
 	}
 }

@@ -31,15 +31,15 @@ public class IO {
 		case UnsupportedMethod(description: String)
 	}
 
-    public enum Method {
+	public enum Method {
 		case Memory
 
-        var method: UnsafeMutablePointer<BIO_METHOD> {
-            switch self {
-            case .Memory:
-                return BIO_s_mem()
-            }
-        }
+		var method: UnsafeMutablePointer<BIO_METHOD> {
+			switch self {
+			case .Memory:
+				return BIO_s_mem()
+			}
+		}
 	}
 
 	var bio: UnsafeMutablePointer<BIO>?
@@ -54,49 +54,49 @@ public class IO {
 		OpenSSL.initialize()
 		bio = BIO_new(method.method)
 
-        if bio == nil {
-            throw Error.BIO(description: lastSSLErrorDescription)
-        }
+		if bio == nil {
+			throw Error.BIO(description: lastSSLErrorDescription)
+		}
 	}
 
 	public func write(_ data: Data) throws -> Int {
-        let result = data.withUnsafeBufferPointer {
-            BIO_write(bio, $0.baseAddress, Int32($0.count))
-        }
+		let result = data.withUnsafeBufferPointer {
+			BIO_write(bio, $0.baseAddress, Int32($0.count))
+		}
 
-        if result < 0 {
-            if shouldRetry {
-                throw Error.ShouldRetry(description: lastSSLErrorDescription)
-            } else {
-                throw Error.BIO(description: lastSSLErrorDescription)
-            }
-        }
+		if result < 0 {
+			if shouldRetry {
+				throw Error.ShouldRetry(description: lastSSLErrorDescription)
+			} else {
+				throw Error.BIO(description: lastSSLErrorDescription)
+			}
+		}
 
-        return Int(result)
+		return Int(result)
 	}
 
-    public var pending: Int {
-        return BIO_ctrl_pending(bio)
-    }
+	public var pending: Int {
+		return BIO_ctrl_pending(bio)
+	}
 
-    public var shouldRetry: Bool {
-        return (bio!.pointee.flags & BIO_FLAGS_SHOULD_RETRY) != 0
-    }
+	public var shouldRetry: Bool {
+		return (bio!.pointee.flags & BIO_FLAGS_SHOULD_RETRY) != 0
+	}
 
 	public func read() throws -> Data {
-        var data = Data.buffer(with: DEFAULT_BUFFER_SIZE)
-        let result = data.withUnsafeMutableBufferPointer {
-            BIO_read(bio, $0.baseAddress, Int32($0.count))
-        }
+		var data = Data.buffer(with: DEFAULT_BUFFER_SIZE)
+		let result = data.withUnsafeMutableBufferPointer {
+			BIO_read(bio, $0.baseAddress, Int32($0.count))
+		}
 
-        if result < 0 {
-            if shouldRetry {
-                throw Error.ShouldRetry(description: lastSSLErrorDescription)
-            } else {
-                throw Error.BIO(description: lastSSLErrorDescription)
-            }
-        }
+		if result < 0 {
+			if shouldRetry {
+				throw Error.ShouldRetry(description: lastSSLErrorDescription)
+			} else {
+				throw Error.BIO(description: lastSSLErrorDescription)
+			}
+		}
 
-        return Data(data.prefix(Int(result)))
+		return Data(data.prefix(Int(result)))
 	}
 }

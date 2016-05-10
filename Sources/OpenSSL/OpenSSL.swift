@@ -29,14 +29,14 @@ public let DEFAULT_BUFFER_SIZE = 4096
 
 public struct OpenSSL {
 	private static var _initialize: Void = {
-	    SSL_library_init()
-	    SSL_load_error_strings()
-	    ERR_load_crypto_strings()
-	    OPENSSL_config(nil)
+		SSL_library_init()
+		SSL_load_error_strings()
+		ERR_load_crypto_strings()
+		OPENSSL_config(nil)
 	}()
 
 	public static func initialize() {
-	    _ = _initialize
+		_ = _initialize
 	}
 }
 

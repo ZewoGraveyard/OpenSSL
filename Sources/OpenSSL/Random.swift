@@ -30,7 +30,7 @@ public struct Random {
 	}
 
 	public static func getBytes(_ size: Int) throws -> Data {
-        var buf = Data.buffer(with: size)
+		var buf = Data.buffer(with: size)
 		guard (buf.withUnsafeMutableBufferPointer{ RAND_bytes($0.baseAddress, Int32($0.count)) }) == 1 else {
 			throw Error.Error(description: lastSSLErrorDescription)
 		}

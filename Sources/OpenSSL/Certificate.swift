@@ -53,32 +53,32 @@ public class Certificate {
 		case Sign
 	}
 
-    var certificate: UnsafeMutablePointer<X509>?
+	var certificate: UnsafeMutablePointer<X509>?
 
 	public var fingerprint: String {
-        let md = UnsafeMutablePointer<UInt8>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
-        defer { md.deinitialize(); md.deallocateCapacity(Int(EVP_MAX_MD_SIZE)) }
-        var n: UInt32 = 0
-        X509_digest(certificate, EVP_sha256(), md, &n)
-        return UnsafeMutableBufferPointer(start: md, count: Int(EVP_MAX_MD_SIZE)).makeIterator().prefix(Int(n)).map({ $0.hexString }).joined(separator: ":")
+		let md = UnsafeMutablePointer<UInt8>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
+		defer { md.deinitialize(); md.deallocateCapacity(Int(EVP_MAX_MD_SIZE)) }
+		var n: UInt32 = 0
+		X509_digest(certificate, EVP_sha256(), md, &n)
+		return UnsafeMutableBufferPointer(start: md, count: Int(EVP_MAX_MD_SIZE)).makeIterator().prefix(Int(n)).map({ $0.hexString }).joined(separator: ":")
 	}
 
 	public init(certificate: UnsafeMutablePointer<X509>) {
-        OpenSSL.initialize()
-        self.certificate = certificate
+		OpenSSL.initialize()
+		self.certificate = certificate
 	}
 
 	public init(privateKey: Key, commonName: String, expiresInDays: Int = 365, subjectAltName: String? = nil) throws {
-        OpenSSL.initialize()
+		OpenSSL.initialize()
 
 		let privateKey = privateKey.key
 		var ret: Int32 = 0
 
-        certificate = X509_new()
+		certificate = X509_new()
 
 		guard let certificate = certificate else {
-            throw Error.Certificate
-        }
+			throw Error.Certificate
+		}
 
 		let subject = X509_NAME_new()
 		var ext = X509_EXTENSION_new()
@@ -121,5 +121,4 @@ public class Certificate {
 		ret = X509_sign(certificate, privateKey, EVP_sha256())
 		guard ret >= 0 else { throw Error.Sign }
 	}
-
 }

@@ -25,7 +25,7 @@
 import COpenSSL
 
 public class Key {
-    var key: UnsafeMutablePointer<EVP_PKEY>
+	var key: UnsafeMutablePointer<EVP_PKEY>
 
 	public init(key: UnsafeMutablePointer<EVP_PKEY>) {
 		OpenSSL.initialize()

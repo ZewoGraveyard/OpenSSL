@@ -34,11 +34,11 @@ public class Context {
 
 	public init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) throws {
 		OpenSSL.initialize()
-        context = SSL_CTX_new(getMethod(method, type: type))
+		context = SSL_CTX_new(getMethod(method, type: type))
 
-        if context == nil {
-            throw Error.Context(description: lastSSLErrorDescription)
-        }
+		if context == nil {
+			throw Error.Context(description: lastSSLErrorDescription)
+		}
 	}
 
 	deinit {
@@ -46,27 +46,27 @@ public class Context {
 	}
 
 	public func useCertificate(certificate: Certificate) throws {
-        if SSL_CTX_use_certificate(context, certificate.certificate) != 1 {
-            throw Error.Context(description: lastSSLErrorDescription)
-        }
+		if SSL_CTX_use_certificate(context, certificate.certificate) != 1 {
+			throw Error.Context(description: lastSSLErrorDescription)
+		}
 	}
 
 	public func usePrivateKey(privateKey: Key) throws {
-        if SSL_CTX_use_PrivateKey(context, privateKey.key) != 1 {
-            throw Error.Context(description: lastSSLErrorDescription)
-        }
+		if SSL_CTX_use_PrivateKey(context, privateKey.key) != 1 {
+			throw Error.Context(description: lastSSLErrorDescription)
+		}
 	}
 
 	public func setCipherSuites(cipherSuites: String) throws {
-        if SSL_CTX_set_cipher_list(context, cipherSuites) != 1 {
-            throw Error.Context(description: lastSSLErrorDescription)
-        }
+		if SSL_CTX_set_cipher_list(context, cipherSuites) != 1 {
+			throw Error.Context(description: lastSSLErrorDescription)
+		}
 	}
 
 	public func setSrtpProfiles(srtpProfiles: String) throws {
-        if SSL_CTX_set_tlsext_use_srtp(context, srtpProfiles) != 1 {
-            throw Error.Context(description: lastSSLErrorDescription)
-        }
+		if SSL_CTX_set_tlsext_use_srtp(context, srtpProfiles) != 1 {
+			throw Error.Context(description: lastSSLErrorDescription)
+		}
 	}
 
 }
