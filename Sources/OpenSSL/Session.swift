@@ -88,9 +88,7 @@ public class Session {
 	}
 
 	public var peerCertificate: Certificate? {
-		let certificate = SSL_get_peer_certificate(ssl)
-
-		guard certificate != nil else {
+		guard let certificate = SSL_get_peer_certificate(ssl) else {
 			return nil
 		}
 

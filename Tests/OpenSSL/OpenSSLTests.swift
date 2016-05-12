@@ -8,7 +8,7 @@ class OpenSSLTests: XCTestCase {
 }
 
 extension OpenSSLTests {
-	static var allTests: [(String, OpenSSLTests -> () throws -> Void)] {
+	static var allTests: [(String, (OpenSSLTests) -> () throws -> Void)] {
 		return [
 		   ("testReality", testReality),
 		]

@@ -24,7 +24,7 @@
 
 import COpenSSL
 
-typealias CCallback = @convention(c) Void -> Void
+typealias CCallback = @convention(c) (Void) -> Void
 
 public final class SSLClientContext: Context {
 	public init(verifyBundle: String? = nil,
