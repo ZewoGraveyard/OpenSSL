@@ -123,7 +123,7 @@ public class Session {
 	}
 
 	public func write(_ data: Data) {
-		data.withUnsafeBufferPointer {
+		_ = data.withUnsafeBufferPointer {
 			SSL_write(ssl, $0.baseAddress, Int32($0.count))
 		}
 	}

@@ -59,6 +59,7 @@ public class IO {
 		}
 	}
 
+	@discardableResult
 	public func write(_ data: Data) throws -> Int {
 		let result = data.withUnsafeBufferPointer {
 			BIO_write(bio, $0.baseAddress, Int32($0.count))
