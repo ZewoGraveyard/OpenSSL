@@ -87,7 +87,7 @@ public struct Hash {
 		OpenSSL.initialize()
 
 		var hashBuf = Data.buffer(with: Int(type.digestLength))
-		message.withUnsafeBufferPointer { ptr in
+		_ = message.withUnsafeBufferPointer { ptr in
 			hashBuf.withUnsafeMutableBufferPointer { bufPtr in
 				type.function(ptr.baseAddress, ptr.count, bufPtr.baseAddress)
 			}
@@ -102,7 +102,7 @@ public struct Hash {
 
 		var resultLen: UInt32 = 0
 		let result = UnsafeMutablePointer<Byte>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
-		key.withUnsafeBufferPointer { keyPtr in
+		_ = key.withUnsafeBufferPointer { keyPtr in
 			message.withUnsafeBufferPointer { msgPtr in
 				COpenSSL.HMAC(type.evp, keyPtr.baseAddress, Int32(key.count), msgPtr.baseAddress, msgPtr.count, result, &resultLen)
 			}
@@ -128,7 +128,7 @@ public struct Hash {
 			EVP_DigestUpdate(ctx, UnsafePointer<Void>(digestPtr.baseAddress), digestPtr.count)
 			var signLen: UInt32 = 0
 			var buf = Data.buffer(with: Int(EVP_PKEY_size(key.key)))
-			buf.withUnsafeMutableBufferPointer { ptr in
+			_ = buf.withUnsafeMutableBufferPointer { ptr in
 				EVP_SignFinal(ctx, ptr.baseAddress, &signLen, key.key)
 			}
 			return Data(buf.prefix(Int(signLen)))
