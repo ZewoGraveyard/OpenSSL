@@ -83,7 +83,7 @@ public class Certificate {
 		let subject = X509_NAME_new()
 		var ext = X509_EXTENSION_new()
 
-		let serial = rand()
+		let serial = arc4random()
 		ASN1_INTEGER_set(X509_get_serialNumber(certificate), Int(serial))
 
 		ret = X509_NAME_add_entry_by_txt(subject, "CN", (MBSTRING_FLAG|1), commonName, Int32(commonName.utf8.count), -1, 0)
