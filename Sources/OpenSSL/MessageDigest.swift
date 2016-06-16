@@ -40,7 +40,7 @@ public enum MessageDigestAlgorith {
     case sha512
     case dss
     case dss1
-    case mdc2
+//    case mdc2
     case ripemd160
 
     var algorithm: UnsafePointer<EVP_MD>! {
@@ -56,7 +56,7 @@ public enum MessageDigestAlgorith {
         case .sha512: return EVP_sha512()
         case .dss: return EVP_dss()
         case .dss1: return EVP_dss1()
-        case .mdc2: return EVP_mdc2()
+//        case .mdc2: return EVP_mdc2()
         case .ripemd160: return EVP_ripemd160()
         }
     }
