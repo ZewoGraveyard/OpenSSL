@@ -106,6 +106,9 @@ func cryptoPemCallback(_ buffer: UnsafeMutablePointer<Int8>?, _ size: Int32, _ r
         let bufferLength = size
         var length = Int32(strlen(UnsafePointer<Int8>(u)))
         length = length > bufferLength ? bufferLength : length
+        guard let buffer = buffer else {
+            return 0
+        }
         memcpy(buffer, u, Int(length))
         return length
     }
