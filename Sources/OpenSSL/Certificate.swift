@@ -23,6 +23,11 @@
 // SOFTWARE.
 
 import COpenSSL
+#if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
+    import Darwin
+#elseif os(Linux)
+    import Glibc
+#endif
 
 private extension UInt8 {
 	var hexString: String {
@@ -121,4 +126,22 @@ public class Certificate {
 		ret = X509_sign(certificate, privateKey, EVP_sha256())
 		guard ret >= 0 else { throw Error.Sign }
 	}
+    
+    /**
+        Generates a random Int for use
+       
+        -returns: Int
+     */
+    func rand() -> Int {
+        #if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
+            return Int(arc4random())
+        #elseif os(Linux)
+            while true {
+                let x = Glibc.random()
+                let y = Glibc.random()
+                guard x == y else { return Int(x) }
+            }
+        #endif
+    }
+
 }
