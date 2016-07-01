@@ -24,6 +24,12 @@
 
 import COpenSSL
 
+#if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
+    import Darwin
+#elseif os(Linux)
+    import Glibc
+#endif
+
 private extension UInt8 {
 	var hexString: String {
 		let str = String(self, radix: 16)
@@ -83,7 +89,7 @@ public class Certificate {
 		let subject = X509_NAME_new()
 		var ext = X509_EXTENSION_new()
 
-		let serial = rand()
+        let serial = rand()
 		ASN1_INTEGER_set(X509_get_serialNumber(certificate), Int(serial))
 
 		ret = X509_NAME_add_entry_by_txt(subject, "CN", (MBSTRING_FLAG|1), commonName, Int32(commonName.utf8.count), -1, 0)
@@ -121,4 +127,21 @@ public class Certificate {
 		ret = X509_sign(certificate, privateKey, EVP_sha256())
 		guard ret >= 0 else { throw Error.Sign }
 	}
+    
+    /**
+        Generates a random Int for use
+       
+        -returns: Int
+     */
+    func rand() -> Int {
+        #if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
+            return Int(arc4random())
+        #elseif os(Linux)
+            while true {
+                let x = Glibc.random()
+                let y = Glibc.random()
+                guard x == y else { return Int(x) }
+            }
+        #endif
+    }
 }

@@ -4,7 +4,8 @@ import XCTest
 @testable import OpenSSLTestSuite
 
 XCTMain([
-    testCase(OpenSSLTests.allTests)
+    testCase(OpenSSLTests.allTests),
+    testCase(CertificateTests.allTests)
 ])
 
 #endif
