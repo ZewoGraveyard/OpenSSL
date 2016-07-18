@@ -34,7 +34,7 @@ public final class SSLServerStream: Stream {
 	public var closed: Bool = false
 
 	public init(context: SSLServerContext, rawStream: Stream) throws {
-		OpenSSL.initialize()
+		initialize()
 
 		self.context = context
 		self.rawStream = rawStream

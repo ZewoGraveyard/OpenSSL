@@ -25,19 +25,15 @@
 @_exported import File
 import COpenSSL
 
-public let DEFAULT_BUFFER_SIZE = 4096
-
-public struct OpenSSL {
-	private static var _initialize: Void = {
-		SSL_library_init()
-		SSL_load_error_strings()
-		ERR_load_crypto_strings()
-		OPENSSL_config(nil)
-	}()
-
-	public static func initialize() {
-		_ = _initialize
-	}
-}
-
+//public let DEFAULT_BUFFER_SIZE = 4096
 let SSL_CTRL_SET_ECDH_AUTO: Int32 = 94
+
+private var initialized = false
+
+public func initialize() {
+	guard !initialized else { return }
+	SSL_library_init()
+	SSL_load_error_strings()
+	ERR_load_crypto_strings()
+	OPENSSL_config(nil)
+}

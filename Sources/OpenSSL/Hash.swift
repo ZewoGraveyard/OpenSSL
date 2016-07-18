@@ -84,7 +84,7 @@ public struct Hash {
 	// MARK: - Hash
 
 	public static func hash(_ type: HashType, message: Data) -> Data {
-		OpenSSL.initialize()
+		initialize()
 
 		var hashBuf = Data.buffer(with: Int(type.digestLength))
 		_ = message.withUnsafeBufferPointer { ptr in
@@ -98,7 +98,7 @@ public struct Hash {
 	// MARK: - HMAC
 
 	public static func hmac(_ type: HashType, key: Data, message: Data) -> Data {
-		OpenSSL.initialize()
+		initialize()
 
 		var resultLen: UInt32 = 0
 		let result = UnsafeMutablePointer<Byte>(allocatingCapacity: Int(EVP_MAX_MD_SIZE))
@@ -116,7 +116,7 @@ public struct Hash {
 	// MARK: - RSA
 
 	public static func rsa(_ hashType: HashType, key: Key, message: Data) throws -> Data {
-		OpenSSL.initialize()
+		initialize()
 
 		let ctx = EVP_MD_CTX_create()
 		guard ctx != nil else {

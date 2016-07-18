@@ -47,7 +47,7 @@ public class Session {
 	var ssl: UnsafeMutablePointer<SSL>?
 
 	public init(context: Context) throws {
-		OpenSSL.initialize()
+		initialize()
 
 		ssl = SSL_new(context.context)
 

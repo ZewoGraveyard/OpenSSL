@@ -33,7 +33,7 @@ public class Context {
 	var context: UnsafeMutablePointer<SSL_CTX>?
 
 	public init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) throws {
-		OpenSSL.initialize()
+		initialize()
 		context = SSL_CTX_new(getMethod(method, type: type))
 
 		if context == nil {

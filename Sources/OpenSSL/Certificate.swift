@@ -70,12 +70,12 @@ public class Certificate {
 	}
 
 	public init(certificate: UnsafeMutablePointer<X509>) {
-		OpenSSL.initialize()
+		initialize()
 		self.certificate = certificate
 	}
 
 	public init(privateKey: Key, commonName: String, expiresInDays: Int = 365, subjectAltName: String? = nil) throws {
-		OpenSSL.initialize()
+		initialize()
 
 		let privateKey = privateKey.key
 		var ret: Int32 = 0

@@ -51,7 +51,7 @@ public class IO {
 	}
 
 	public init(method: Method) throws {
-		OpenSSL.initialize()
+		initialize()
 		bio = BIO_new(method.method)
 
 		if bio == nil {

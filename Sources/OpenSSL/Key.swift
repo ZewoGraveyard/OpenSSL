@@ -24,22 +24,41 @@
 
 import COpenSSL
 
-public class Key {
+public struct Key {
+	
+	public enum Error: ErrorProtocol {
+		case Key(description: String)
+	}
+	
 	var key: UnsafeMutablePointer<EVP_PKEY>
 
 	public init(key: UnsafeMutablePointer<EVP_PKEY>) {
-		OpenSSL.initialize()
+		initialize()
 		self.key = key
+	}
+	
+	public init(io: IO) throws {
+		guard let _key = PEM_read_bio_PrivateKey(io.bio, nil, nil, nil) else {
+			throw Error.Key(description: lastSSLErrorDescription)
+		}
+		initialize()
+		self.key = _key
+	}
+	
+	public init(string: String) throws {
+		let io = try IO(method: .Memory)
+		try io.write(string.data)
+		try self.init(io: io)
 	}
 
 	public init(filePath: String) throws {
-		let bio = try IO(filePath: filePath)
-		self.key = PEM_read_bio_PrivateKey(bio.bio, nil, nil, nil)
+		let io = try IO(filePath: filePath)
+		try self.init(io: io)
 	}
 
 	public init(keyLength: Int32) {
-		OpenSSL.initialize()
-		key = EVP_PKEY_new()
+		initialize()
+		self.key = EVP_PKEY_new()
 		let rsa = RSA_new()
 		let exponent = BN_new()
 		BN_set_word(exponent, 0x10001)
