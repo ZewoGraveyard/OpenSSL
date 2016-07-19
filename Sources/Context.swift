@@ -55,6 +55,30 @@ public class Context {
 			SSL_CTX_set_verify(context, SSL_VERIFY_NONE, nil)
 		}
 	}
+	
+	public convenience init(method: Method = .sslv23, mode: Method.Mode = .client, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, SNIHostname: String? = nil) throws {
+		try self.init(method: method, mode: mode)
+		
+		if let verifyBundle = verifyBundle {
+			try useVerifyBundle(verifyBundle: verifyBundle)
+		}
+		
+		if let certificate = certificate {
+			try useCertificateFile(certificateFile: certificate)
+		}
+		
+		if let privateKey = privateKey {
+			try usePrivateKeyFile(privateKeyFile: privateKey)
+		}
+		
+		if let certificateChain = certificateChain {
+			try useCertificateChainFile(certificateChainFile: certificateChain)
+		}
+		
+		if let SNIHostname = SNIHostname {
+			try setServerNameIndication(hostname: SNIHostname)
+		}
+	}
 
 	deinit {
 		SSL_CTX_free(context)
