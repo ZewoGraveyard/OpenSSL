@@ -1,4 +1,4 @@
-// SSLContext.swift
+// Key.swift
 //
 // The MIT License (MIT)
 //
@@ -24,49 +24,43 @@
 
 import COpenSSL
 
-public class Context {
+public class Key {
+	
 	public enum Error: ErrorProtocol {
-		case Context(description: String)
-		case Certificate(description: String)
+		case error(description: String)
 	}
+	
+	var key: UnsafeMutablePointer<EVP_PKEY>
 
-	var context: UnsafeMutablePointer<SSL_CTX>?
-
-	public init(method: SSLMethod = .SSLv23, type: SSLMethodType = .Unspecified) throws {
+	init(key: UnsafeMutablePointer<EVP_PKEY>) {
 		initialize()
-		context = SSL_CTX_new(getMethod(method, type: type))
-
-		if context == nil {
-			throw Error.Context(description: lastSSLErrorDescription)
-		}
+		self.key = key
 	}
-
+	
+	init(io: IO) throws {
+		initialize()
+		guard let _key = PEM_read_bio_PrivateKey(io.bio, nil, nil, nil) else {
+			throw Error.error(description: lastSSLErrorDescription)
+		}
+		self.key = _key
+	}
+	
+	public convenience init(pemString: String) throws {
+		try self.init(io: IO(buffer: pemString.data))
+	}
+	
 	deinit {
-		SSL_CTX_free(context)
+		EVP_PKEY_free(key)
 	}
-
-	public func useCertificate(certificate: Certificate) throws {
-		if SSL_CTX_use_certificate(context, certificate.certificate) != 1 {
-			throw Error.Context(description: lastSSLErrorDescription)
-		}
+	
+	public static func generate(keyLength: Int32 = 2048) -> Key {
+		let key = Key(key: EVP_PKEY_new())
+		let rsa = RSA_new()
+		let exponent = BN_new()
+		BN_set_word(exponent, 0x10001)
+		RSA_generate_key_ex(rsa, keyLength, exponent, nil)
+		EVP_PKEY_set1_RSA(key.key, rsa)
+		return key
 	}
-
-	public func usePrivateKey(privateKey: Key) throws {
-		if SSL_CTX_use_PrivateKey(context, privateKey.key) != 1 {
-			throw Error.Context(description: lastSSLErrorDescription)
-		}
-	}
-
-	public func setCipherSuites(cipherSuites: String) throws {
-		if SSL_CTX_set_cipher_list(context, cipherSuites) != 1 {
-			throw Error.Context(description: lastSSLErrorDescription)
-		}
-	}
-
-	public func setSrtpProfiles(srtpProfiles: String) throws {
-		if SSL_CTX_set_tlsext_use_srtp(context, srtpProfiles) != 1 {
-			throw Error.Context(description: lastSSLErrorDescription)
-		}
-	}
-
+	
 }

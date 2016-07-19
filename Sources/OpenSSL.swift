@@ -1,4 +1,4 @@
-// SHA256.swift
+// OpenSSL.swift
 //
 // The MIT License (MIT)
 //
@@ -24,27 +24,12 @@
 
 import COpenSSL
 
-public class SHA256 {
-    let context:  UnsafeMutablePointer<SHA256_CTX>!
+private var initialized = false
 
-    deinit {
-        context.deallocateCapacity(1)
-    }
-
-    public init() {
-        let context = UnsafeMutablePointer<SHA256_CTX>(allocatingCapacity: 1)
-        SHA256_Init(context)
-        self.context = context
-    }
-
-    public func update(_ data: Data) {
-        var data = data
-        SHA256_Update(context, &data.bytes, data.count)
-    }
-
-    public func final() -> Data {
-        var hash = Data.buffer(with: Int(SHA256_DIGEST_LENGTH))
-        SHA256_Final(&hash.bytes, context)
-        return hash
-    }
+public func initialize() {
+	guard !initialized else { return }
+	SSL_library_init()
+	SSL_load_error_strings()
+	ERR_load_crypto_strings()
+	OPENSSL_config(nil)
 }

@@ -1,4 +1,4 @@
-// OpenSSL.swift
+// Random.swift
 //
 // The MIT License (MIT)
 //
@@ -22,18 +22,39 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-@_exported import File
+#if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
+	import Darwin
+#elseif os(Linux)
+	import Glibc
+#endif
+
+import C7
 import COpenSSL
 
-//public let DEFAULT_BUFFER_SIZE = 4096
-let SSL_CTRL_SET_ECDH_AUTO: Int32 = 94
+public class Random {
+	
+	public enum Error: ErrorProtocol {
+		case error(description: String)
+	}
+	
+	public static func number() -> Int {
+		#if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
+			return Int(arc4random())
+		#elseif os(Linux)
+			while true {
+				let x = Glibc.random()
+				let y = Glibc.random()
+				guard x == y else { return Int(x) }
+			}
+		#endif
+	}
+	
+	public static func bytes(_ size: Int) throws -> Data {
+		var buf = Data.buffer(with: size)
+		guard (buf.withUnsafeMutableBufferPointer{ RAND_bytes($0.baseAddress, Int32($0.count)) }) == 1 else {
+			throw Error.error(description: lastSSLErrorDescription)
+		}
+		return buf
+	}
 
-private var initialized = false
-
-public func initialize() {
-	guard !initialized else { return }
-	SSL_library_init()
-	SSL_load_error_strings()
-	ERR_load_crypto_strings()
-	OPENSSL_config(nil)
 }

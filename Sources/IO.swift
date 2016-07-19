@@ -1,4 +1,4 @@
-// SSLIO.swift
+// IO.swift
 //
 // The MIT License (MIT)
 //
@@ -22,41 +22,54 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+import C7
 import COpenSSL
 
 public class IO {
+	
 	public enum Error: ErrorProtocol {
-		case BIO(description: String)
-		case ShouldRetry(description: String)
-		case UnsupportedMethod(description: String)
+		case io(description: String)
+		case shouldRetry(description: String)
+		case unsupportedMethod(description: String)
 	}
 
 	public enum Method {
-		case Memory
+		case memory
 
 		var method: UnsafeMutablePointer<BIO_METHOD> {
 			switch self {
-			case .Memory:
+			case .memory:
 				return BIO_s_mem()
 			}
 		}
 	}
-
+	
 	var bio: UnsafeMutablePointer<BIO>?
-
-	public convenience init(filePath: String) throws {
-		try self.init(method: .Memory)
-		let file = try File(path: filePath)
-		try write(file.readAllBytes())
-	}
-
-	public init(method: Method) throws {
+	
+	public init(method: Method = .memory) throws {
 		initialize()
 		bio = BIO_new(method.method)
 
 		if bio == nil {
-			throw Error.BIO(description: lastSSLErrorDescription)
+			throw Error.io(description: lastSSLErrorDescription)
 		}
+	}
+	
+	public convenience init(buffer: Data) throws {
+		try self.init()
+		try write(buffer)
+	}
+	
+	deinit {
+		BIO_free(bio)
+	}
+	
+	public var pending: Int {
+		return BIO_ctrl_pending(bio)
+	}
+	
+	public var shouldRetry: Bool {
+		return (bio!.pointee.flags & BIO_FLAGS_SHOULD_RETRY) != 0
 	}
 
 	@discardableResult
@@ -64,40 +77,33 @@ public class IO {
 		let result = data.withUnsafeBufferPointer {
 			BIO_write(bio, $0.baseAddress, Int32($0.count))
 		}
-
+		
 		if result < 0 {
 			if shouldRetry {
-				throw Error.ShouldRetry(description: lastSSLErrorDescription)
+				throw Error.shouldRetry(description: lastSSLErrorDescription)
 			} else {
-				throw Error.BIO(description: lastSSLErrorDescription)
+				throw Error.io(description: lastSSLErrorDescription)
 			}
 		}
 
 		return Int(result)
 	}
 
-	public var pending: Int {
-		return BIO_ctrl_pending(bio)
-	}
-
-	public var shouldRetry: Bool {
-		return (bio!.pointee.flags & BIO_FLAGS_SHOULD_RETRY) != 0
-	}
-
-	public func read() throws -> Data {
-		var data = Data.buffer(with: DEFAULT_BUFFER_SIZE)
+	public func read(upTo byteCount: Int) throws -> Data {
+		var data = Data.buffer(with: byteCount)
 		let result = data.withUnsafeMutableBufferPointer {
 			BIO_read(bio, $0.baseAddress, Int32($0.count))
 		}
 
 		if result < 0 {
 			if shouldRetry {
-				throw Error.ShouldRetry(description: lastSSLErrorDescription)
+				throw Error.shouldRetry(description: lastSSLErrorDescription)
 			} else {
-				throw Error.BIO(description: lastSSLErrorDescription)
+				throw Error.io(description: lastSSLErrorDescription)
 			}
 		}
 
 		return Data(data.prefix(Int(result)))
 	}
+	
 }
