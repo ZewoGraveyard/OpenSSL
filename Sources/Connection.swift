@@ -1,4 +1,4 @@
-// Stream.swift
+// Connection.swift
 //
 // The MIT License (MIT)
 //
@@ -25,9 +25,23 @@
 import C7
 import COpenSSL
 
-public final class Stream: C7.Stream {
+public final class Connection: C7.Connection {
 	
-	private let rawStream: C7.Stream
+	private enum Raw {
+		case stream(C7.Stream)
+		case connection(C7.Connection)
+		
+		var stream: C7.Stream {
+			switch self {
+			case .stream(let stream):
+				return stream
+			case .connection(let connection):
+				return connection
+			}
+		}
+	}
+	
+	private let raw: Raw
 	private let context: Context
 	private let session: Session
 	private let readIO: IO
@@ -35,11 +49,19 @@ public final class Stream: C7.Stream {
 	
 	public var closed: Bool = false
 	
-	public init(context: Context, rawStream: C7.Stream, timingOut deadline: Double = .never) throws {
+	public convenience init(context: Context, rawStream: C7.Stream) throws {
+		try self.init(context: context, raw: .stream(rawStream))
+	}
+	
+	public convenience init(context: Context, rawConnection: C7.Connection) throws {
+		try self.init(context: context, raw: .connection(rawConnection))
+	}
+	
+	private init(context: Context, raw: Raw) throws {
 		initialize()
 		
 		self.context = context
-		self.rawStream = rawStream
+		self.raw = raw
 		
 		readIO = try IO()
 		writeIO = try IO()
@@ -55,18 +77,27 @@ public final class Stream: C7.Stream {
 			session.setAcceptState()
 		} else {
 			session.setConnectState()
+		}
+	}
+	
+	public func open(timingOut deadline: Double) throws {
+		if case .connection(let rawConnection) = raw {
+			print("~~~ rawConnection")
+			try rawConnection.open(timingOut: deadline)
+		}
+		
+		if context.mode == .client {
 			try handshake(timingOut: deadline)
 		}
 	}
 	
 	private func handshake(timingOut deadline: Double) throws {
-		guard context.mode == .client else { return }
 		while !session.initializationFinished {
 			do {
 				try session.handshake()
 			} catch Session.Error.wantRead {
 				try self.flush(timingOut: deadline)
-				let data = try rawStream.receive(upTo: 1024, timingOut: deadline)
+				let data = try raw.stream.receive(upTo: 1024, timingOut: deadline)
 				try readIO.write(data)
 			}
 		}
@@ -81,7 +112,7 @@ public final class Stream: C7.Stream {
 				}
 			} catch Session.Error.wantRead {
 				do {
-					let data = try rawStream.receive(upTo: byteCount, timingOut: deadline)
+					let data = try raw.stream.receive(upTo: byteCount, timingOut: deadline)
 					try readIO.write(data)
 				} catch StreamError.closedStream(let data) {
 					try readIO.write(data)
@@ -106,15 +137,15 @@ public final class Stream: C7.Stream {
 	public func flush(timingOut deadline: Double) throws {
 		do {
 			let data = try writeIO.read(upTo: writeIO.pending)
-			try rawStream.send(data, timingOut: deadline)
-			try rawStream.flush(timingOut: deadline)
+			try raw.stream.send(data, timingOut: deadline)
+			try raw.stream.flush(timingOut: deadline)
 		} catch IO.Error.shouldRetry { }
 	}
 	
 	public func close() throws {
 		// TODO: http://stackoverflow.com/questions/28056056/handling-ssl-shutdown-correctly
 //		session.shutdown()
-		try rawStream.close()
+		try raw.stream.close()
 	}
 	
 }
