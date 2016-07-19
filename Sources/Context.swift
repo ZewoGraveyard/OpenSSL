@@ -78,8 +78,14 @@ public class Context {
 		}
 	}
 	
-	public func useCertificateChain(certificateChain: String) throws {
-		if SSL_CTX_use_certificate_chain_file(context, certificateChain) != 1 {
+	public func useCertificateFile(certificateFile: String) throws {
+		if SSL_CTX_use_certificate_file(context, certificateFile, SSL_FILETYPE_PEM) != 1 {
+			throw Error.certificate(description: lastSSLErrorDescription)
+		}
+	}
+	
+	public func useCertificateChainFile(certificateChainFile: String) throws {
+		if SSL_CTX_use_certificate_chain_file(context, certificateChainFile) != 1 {
 			throw Error.certificate(description: lastSSLErrorDescription)
 		}
 	}
@@ -88,7 +94,17 @@ public class Context {
 		if SSL_CTX_use_PrivateKey(context, privateKey.key) != 1 {
 			throw Error.key(description: lastSSLErrorDescription)
 		}
-		
+		try checkPrivateKey()
+	}
+	
+	public func usePrivateKeyFile(privateKeyFile: String) throws {
+		if SSL_CTX_use_PrivateKey_file(context, privateKeyFile, SSL_FILETYPE_PEM) != 1 {
+			throw Error.key(description: lastSSLErrorDescription)
+		}
+		try checkPrivateKey()
+	}
+	
+	private func checkPrivateKey() throws {
 		if SSL_CTX_check_private_key(context) != 1 {
 			throw Error.key(description: lastSSLErrorDescription)
 		}
