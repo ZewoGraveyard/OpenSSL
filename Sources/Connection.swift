@@ -25,7 +25,7 @@
 import C7
 import COpenSSL
 
-public final class Connection: C7.Connection {
+public final class SSLConnection: C7.Connection {
 	
 	private enum Raw {
 		case stream(C7.Stream)
