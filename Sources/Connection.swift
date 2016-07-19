@@ -90,13 +90,22 @@ public final class SSLConnection: C7.Connection {
 	}
 	
 	private func handshake(timingOut deadline: Double) throws {
+		let flushAndReceive = {
+			try self.flush(timingOut: deadline)
+			let data = try self.raw.stream.receive(upTo: 1024, timingOut: deadline)
+			try self.readIO.write(data)
+		}
 		while !session.initializationFinished {
 			do {
 				try session.handshake()
-			} catch Session.Error.wantRead {}
-			try flush(timingOut: deadline)
-			let data = try raw.stream.receive(upTo: 1024, timingOut: deadline)
-			try readIO.write(data)
+			} catch Session.Error.wantRead {
+				if context.mode == .client {
+					try flushAndReceive()
+				}
+			}
+			if context.mode == .server {
+				try flushAndReceive()
+			}
 		}
 	}
 	
