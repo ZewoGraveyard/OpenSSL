@@ -32,10 +32,13 @@ public class Context {
 		case key(description: String)
 	}
 	
+	let mode: Method.Mode
 	var context: UnsafeMutablePointer<SSL_CTX>?
 	var sniHostname: String? = nil
 	
 	public init(method: Method = .sslv23, mode: Method.Mode = .client) throws {
+		self.mode = mode
+		
 		initialize()
 		context = SSL_CTX_new(method.getMethod(mode: mode))
 

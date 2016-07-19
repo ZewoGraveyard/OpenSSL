@@ -60,9 +60,10 @@ public class IO {
 		try write(buffer)
 	}
 	
-	deinit {
-		BIO_free(bio)
-	}
+	// TODO: crash???
+//	deinit {
+//		BIO_free(bio)
+//	}
 	
 	public var pending: Int {
 		return BIO_ctrl_pending(bio)

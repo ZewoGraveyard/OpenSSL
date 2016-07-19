@@ -27,11 +27,6 @@ import COpenSSL
 
 public final class Stream: C7.Stream {
 	
-	public enum Mode {
-		case connect, accept
-	}
-	
-	private let mode: Mode
 	private let rawStream: C7.Stream
 	private let context: Context
 	private let session: Session
@@ -40,10 +35,9 @@ public final class Stream: C7.Stream {
 	
 	public var closed: Bool = false
 	
-	public init(mode: Mode, context: Context, rawStream: C7.Stream, timingOut deadline: Double = .never) throws {
+	public init(context: Context, rawStream: C7.Stream, timingOut deadline: Double = .never) throws {
 		initialize()
 		
-		self.mode = mode
 		self.context = context
 		self.rawStream = rawStream
 		
@@ -57,17 +51,16 @@ public final class Stream: C7.Stream {
 			try session.setServerNameIndication(hostname: hostname)
 		}
 		
-		if mode == .accept {
+		if context.mode == .server {
 			session.setAcceptState()
 		} else {
 			session.setConnectState()
+			try handshake(timingOut: deadline)
 		}
-		
-		try handshake(timingOut: deadline)
 	}
 	
 	private func handshake(timingOut deadline: Double) throws {
-		guard mode == .connect else { return }
+		guard context.mode == .client else { return }
 		while !session.initializationFinished {
 			do {
 				try session.handshake()
@@ -77,7 +70,6 @@ public final class Stream: C7.Stream {
 				try readIO.write(data)
 			}
 		}
-		print("### handshake done")
 	}
 	
 	public func receive(upTo byteCount: Int, timingOut deadline: Double) throws -> Data {

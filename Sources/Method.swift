@@ -41,8 +41,6 @@ public enum Method {
 		switch self {
 		case .sslv23:
 			switch mode {
-//			case .unspecified:
-//				return SSLv23_method()
 			case .server:
 				return SSLv23_server_method()
 			case .client:
@@ -50,8 +48,6 @@ public enum Method {
 			}
 		case .tlsv1:
 			switch mode {
-//			case .unspecified:
-//				return TLSv1_method()
 			case .server:
 				return TLSv1_server_method()
 			case .client:
@@ -59,8 +55,6 @@ public enum Method {
 			}
 		case .tlsv1_1:
 			switch mode {
-//			case .unspecified:
-//				return TLSv1_1_method()
 			case .server:
 				return TLSv1_1_server_method()
 			case .client:
@@ -68,8 +62,6 @@ public enum Method {
 			}
 		case .tlsv1_2:
 			switch mode {
-//			case .unspecified:
-//				return TLSv1_2_method()
 			case .server:
 				return TLSv1_2_server_method()
 			case .client:
@@ -77,8 +69,6 @@ public enum Method {
 			}
 		case .dtlsv1:
 			switch mode {
-//			case .unspecified:
-//				return DTLSv1_method()
 			case .server:
 				return DTLSv1_server_method()
 			case .client:
