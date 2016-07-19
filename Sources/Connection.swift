@@ -86,20 +86,17 @@ public final class SSLConnection: C7.Connection {
 			try rawConnection.open(timingOut: deadline)
 		}
 		
-		if context.mode == .client {
-			try handshake(timingOut: deadline)
-		}
+		try handshake(timingOut: deadline)
 	}
 	
 	private func handshake(timingOut deadline: Double) throws {
 		while !session.initializationFinished {
 			do {
 				try session.handshake()
-			} catch Session.Error.wantRead {
-				try self.flush(timingOut: deadline)
-				let data = try raw.stream.receive(upTo: 1024, timingOut: deadline)
-				try readIO.write(data)
-			}
+			} catch Session.Error.wantRead {}
+			try flush(timingOut: deadline)
+			let data = try raw.stream.receive(upTo: 1024, timingOut: deadline)
+			try readIO.write(data)
 		}
 	}
 	
@@ -115,7 +112,11 @@ public final class SSLConnection: C7.Connection {
 					let data = try raw.stream.receive(upTo: byteCount, timingOut: deadline)
 					try readIO.write(data)
 				} catch StreamError.closedStream(let data) {
-					try readIO.write(data)
+					if data.count > 0 {
+						try readIO.write(data)
+					} else {
+						throw StreamError.closedStream(data: [])
+					}
 				}
 			} catch Session.Error.zeroReturn {
 				throw StreamError.closedStream(data: [])

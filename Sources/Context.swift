@@ -63,16 +63,16 @@ public class Context {
 			try useVerifyBundle(verifyBundle: verifyBundle)
 		}
 		
+		if let certificateChain = certificateChain {
+			try useCertificateChainFile(certificateChainFile: certificateChain)
+		}
+		
 		if let certificate = certificate {
 			try useCertificateFile(certificateFile: certificate)
 		}
 		
 		if let privateKey = privateKey {
 			try usePrivateKeyFile(privateKeyFile: privateKey)
-		}
-		
-		if let certificateChain = certificateChain {
-			try useCertificateChainFile(certificateChainFile: certificateChain)
 		}
 		
 		if let SNIHostname = SNIHostname {
@@ -114,18 +114,22 @@ public class Context {
 		}
 	}
 
-	public func usePrivateKey(privateKey: Key) throws {
+	public func usePrivateKey(privateKey: Key, check: Bool = true) throws {
 		if SSL_CTX_use_PrivateKey(context, privateKey.key) != 1 {
 			throw Error.key(description: lastSSLErrorDescription)
 		}
-		try checkPrivateKey()
+		if check {
+			try checkPrivateKey()
+		}
 	}
 	
-	public func usePrivateKeyFile(privateKeyFile: String) throws {
+	public func usePrivateKeyFile(privateKeyFile: String, check: Bool = true) throws {
 		if SSL_CTX_use_PrivateKey_file(context, privateKeyFile, SSL_FILETYPE_PEM) != 1 {
 			throw Error.key(description: lastSSLErrorDescription)
 		}
-		try checkPrivateKey()
+		if check {
+			try checkPrivateKey()
+		}
 	}
 	
 	private func checkPrivateKey() throws {
