@@ -37,15 +37,11 @@ public class Random {
 		case error(description: String)
 	}
 	
-	public static func number() -> Int {
+	public static func number(max: Int = Int(UInt32.max)) -> Int {
 		#if os(OSX) || os(iOS) || os(tvOS) || os(watchOS)
-			return Int(arc4random())
+			return Int(arc4random_uniform(UInt32(max)))
 		#elseif os(Linux)
-			while true {
-				let x = Glibc.random()
-				let y = Glibc.random()
-				guard x == y else { return Int(x) }
-			}
+			return Int(random() % (max + 1))
 		#endif
 	}
 	
