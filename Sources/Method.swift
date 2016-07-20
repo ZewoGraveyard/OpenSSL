@@ -24,7 +24,7 @@
 
 import COpenSSL
 
-public enum Method {
+public enum SSLMethod {
 	public enum Mode {
 		case server, client
 	}
@@ -37,7 +37,7 @@ public enum Method {
 //	case dtlsv1_2	// DTLSv1.2
 //	case dtls		// DTLS 1.0 and 1.2
 	
-	func getMethod(mode: Method.Mode = .client) -> UnsafePointer<SSL_METHOD> {
+	func getMethod(mode: Mode = .client) -> UnsafePointer<SSL_METHOD> {
 		switch self {
 		case .sslv23:
 			switch mode {

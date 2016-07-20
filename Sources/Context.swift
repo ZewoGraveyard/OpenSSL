@@ -32,11 +32,11 @@ public class Context {
 		case key(description: String)
 	}
 	
-	let mode: Method.Mode
+	let mode: SSLMethod.Mode
 	var context: UnsafeMutablePointer<SSL_CTX>?
 	var sniHostname: String? = nil
 	
-	public init(method: Method = .sslv23, mode: Method.Mode = .client) throws {
+	public init(method: SSLMethod = .sslv23, mode: SSLMethod.Mode = .client) throws {
 		self.mode = mode
 		
 		initialize()
@@ -56,7 +56,7 @@ public class Context {
 		}
 	}
 	
-	public convenience init(method: Method = .sslv23, mode: Method.Mode = .client, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, SNIHostname: String? = nil) throws {
+	public convenience init(method: SSLMethod = .sslv23, mode: SSLMethod.Mode = .client, verifyBundle: String? = nil, certificate: String? = nil, privateKey: String? = nil, certificateChain: String? = nil, SNIHostname: String? = nil) throws {
 		try self.init(method: method, mode: mode)
 		
 		if let verifyBundle = verifyBundle {
