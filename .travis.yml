@@ -10,8 +10,8 @@ osx_image: xcode8
 before_install:
   - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
         brew update;
-        brew install openssl;
-        brew link --force openssl;
+        brew install homebrew/versions/openssl101;
+        brew link --force homebrew/versions/openssl101;
     fi
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         sudo apt-get -qq update;
