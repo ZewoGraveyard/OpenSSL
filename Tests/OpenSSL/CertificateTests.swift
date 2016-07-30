@@ -6,13 +6,13 @@ class CertificateTests: XCTestCase {
         Test for https://github.com/Zewo/OpenSSL/pull/20
     */
     func testRand() throws {
-        let key = Key(keyLength: 2048)
+        let key = Key.generate(keyLength: 2048)
         let cn = "example.com"
         
         let cert = try Certificate(privateKey:key, commonName:cn)
-        
-        let first = cert.rand()
-        let second = cert.rand()
+		
+        let first = Random.number()
+        let second = Random.number()
         
         XCTAssert(
             first != second,
