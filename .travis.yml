@@ -7,16 +7,6 @@ language: generic
 sudo: required
 dist: trusty
 osx_image: xcode8
-before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-        brew update;
-        brew install homebrew/versions/openssl101;
-        brew link --force homebrew/versions/openssl101;
-    fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-        sudo apt-get -qq update;
-        sudo apt-get -y install libssl-dev;
-    fi
 install:
   - eval "$(curl -sL https://raw.githubusercontent.com/Zewo/Zewo/5254525d9da56df29346fd76e99529c22034d61d/Scripts/install-swiftenv.sh)"
 script:

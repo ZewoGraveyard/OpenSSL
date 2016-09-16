@@ -1,11 +1,6 @@
-#if os(Linux)
-
 import XCTest
-@testable import OpenSSLTestSuite
+@testable import OpenSSLTests
 
 XCTMain([
-    testCase(OpenSSLTests.allTests),
-    testCase(CertificateTests.allTests)
+    testCase(CertificateTests.allTests),
 ])
-
-#endif

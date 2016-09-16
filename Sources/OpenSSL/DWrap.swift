@@ -1,37 +1,3 @@
-//	====================================================================
-//
-//	Copyright (c) 2007-2008, Eric Rescorla and Derek MacDonald
-//	All rights reserved.
-//
-//	Redistribution and use in source and binary forms, with or without
-//	modification, are permitted provided that the following conditions are
-//	met:
-//
-//	1. Redistributions of source code must retain the above copyright
-//	   notice, this list of conditions and the following disclaimer.
-//
-//	2. Redistributions in binary form must reproduce the above copyright
-//	   notice, this list of conditions and the following disclaimer in the
-//	   documentation and/or other materials provided with the distribution.
-//
-//	3. None of the contributors names may be used to endorse or promote
-//	   products derived from this software without specific prior written
-//	   permission.
-//
-//	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-//	"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-//	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-//	A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-//	OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-//	SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-//	LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-//	DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-//	THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-//	(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-//	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
-//	====================================================================
-
 import COpenSSL
 
 public let BIO_TYPE_DWRAP: Int32 = (50 | 0x0400 | 0x0200)
@@ -48,11 +14,11 @@ public func BIO_f_dwrap() -> UnsafeMutablePointer<BIO_METHOD> {
 	return getPointer(&methods_dwrap)
 }
 
-func OPENSSL_malloc(_ num: Int, file: String = #file, line: Int = #line) -> UnsafeMutablePointer<Void>? {
+func OPENSSL_malloc(_ num: Int, file: String = #file, line: Int = #line) -> UnsafeMutableRawPointer {
 	return CRYPTO_malloc(Int32(num), file, Int32(line))
 }
 
-func OPENSSL_free(_ ptr: UnsafeMutablePointer<Void>) {
+func OPENSSL_free(_ ptr: UnsafeMutableRawPointer) {
 	CRYPTO_free(ptr)
 }
 
@@ -66,10 +32,9 @@ private struct BIO_F_DWRAP_CTX {
 }
 
 private func dwrap_new(bio: UnsafeMutablePointer<BIO>?) -> Int32 {
-	let maybeCtx = OPENSSL_malloc(sizeof(BIO_F_DWRAP_CTX.self))
-	guard let ctx = maybeCtx else { return 0 }
+	let ctx = OPENSSL_malloc(MemoryLayout<BIO_F_DWRAP_CTX>.size)
 
-	memset(ctx, 0, sizeof(BIO_F_DWRAP_CTX.self))
+	memset(ctx, 0, MemoryLayout<BIO_F_DWRAP_CTX>.size)
 
 	let b = bio!.pointee
 	bio!.pointee = BIO(method: b.method, callback: b.callback, cb_arg: b.cb_arg, init: 1, shutdown: b.shutdown, flags: 0, retry_reason: b.retry_reason, num: b.num, ptr: ctx, next_bio: b.next_bio, prev_bio: b.prev_bio, references: b.references, num_read: b.num_read, num_write: b.num_write, ex_data: b.ex_data)
@@ -89,7 +54,7 @@ private func dwrap_free(bio: UnsafeMutablePointer<BIO>?) -> Int32 {
 }
 
 private func dwrap_read(bio: UnsafeMutablePointer<BIO>?, data: UnsafeMutablePointer<Int8>?, length: Int32) -> Int32 {
-	guard let bio = bio, data = data else { return 0 }
+	guard let bio = bio, let data = data else { return 0 }
 
 	BIO_clear_retry_flags(bio)
 
@@ -103,7 +68,7 @@ private func dwrap_read(bio: UnsafeMutablePointer<BIO>?, data: UnsafeMutablePoin
 }
 
 private func dwrap_write(bio: UnsafeMutablePointer<BIO>?, data: UnsafePointer<Int8>?, length: Int32) -> Int32 {
-	guard let bio = bio, let data = data where length > 0 else { return 0 }
+	guard let bio = bio, let data = data, length > 0 else { return 0 }
 	return BIO_write(bio.pointee.next_bio, data, length)
 }
 
@@ -115,8 +80,8 @@ private func dwrap_gets(bio: UnsafeMutablePointer<BIO>?, data: UnsafeMutablePoin
 	fatalError()
 }
 
-private func dwrap_ctrl(bio: UnsafeMutablePointer<BIO>?, cmd: Int32, num: Int, ptr: UnsafeMutablePointer<Void>?) -> Int {
-	let ctx = UnsafeMutablePointer<BIO_F_DWRAP_CTX>(bio!.pointee.ptr)!
+private func dwrap_ctrl(bio: UnsafeMutablePointer<BIO>?, cmd: Int32, num: Int, ptr: UnsafeMutableRawPointer?) -> Int {
+	let ctx = bio!.pointee.ptr.assumingMemoryBound(to: BIO_F_DWRAP_CTX.self)
 	var ret: Int
 	switch cmd {
 	case BIO_CTRL_DGRAM_GET_RECV_TIMER_EXP:
